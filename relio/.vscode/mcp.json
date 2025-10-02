@@ -6,6 +6,14 @@
         "shadcn@latest",
         "mcp"
       ]
+    },
+    "@21st-dev/magic": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@21st-dev/magic@latest",
+        "API_KEY=\"a70dfcb99cba52e4f384a21df20aef7f0268d5c427b6d5191e41e3d88286e963\""
+      ]
     }
   }
 }

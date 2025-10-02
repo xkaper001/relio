@@ -1,36 +1,260 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 Relio - Resume to Portfolio in Seconds
 
-## Getting Started
+**Relio** is a SaaS application that converts resumes into beautiful portfolio websites using AI. Built with Next.js, Prisma, and Cerebras AI.
 
-First, run the development server:
+## ✨ Features
+
+- 🤖 **AI-Powered Parsing** - Converts PDF/DOCX resumes to structured portfolios using Cerebras Cloud SDK
+- 🎨 **Beautiful UI** - Modern, responsive design with TailwindCSS and Framer Motion
+- 🔐 **Multi-Auth Support** - Google, GitHub, and email/password authentication via NextAuth.js
+- 🆓 **Try Without Signup** - Anonymous mode with 24-hour temporary portfolios
+- 📊 **Dashboard** - User-friendly interface to manage and edit portfolios
+- 🌐 **Dynamic Routes** - Each user gets a custom portfolio at `/[username]`
+- 🗄️ **PostgreSQL + Prisma** - Robust database with type-safe ORM
+- ⏰ **Auto Cleanup** - Scheduled jobs to remove expired temporary portfolios
+
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js 15 (App Router, TypeScript)
+- **Styling**: TailwindCSS 4 + Framer Motion
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: NextAuth.js (Google, GitHub, Credentials)
+- **AI**: Cerebras Cloud SDK for resume parsing
+- **File Parsing**: pdf-parse, mammoth (PDF/DOCX support)
+- **Deployment**: Vercel (recommended)
+
+## 📋 Prerequisites
+
+- Node.js 18+ and npm/yarn/pnpm
+- PostgreSQL database (local or cloud)
+- Cerebras API key ([Get one here](https://cloud.cerebras.ai/))
+- OAuth credentials for Google/GitHub (optional)
+
+## 🚀 Quick Start
+
+### 1. Clone and Install
+
+```bash
+git clone <your-repo-url>
+cd relio
+npm install
+```
+
+### 2. Environment Setup
+
+Create a `.env` file in the root directory:
+
+```bash
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/relio"
+
+# NextAuth
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-super-secret-key-generate-with-openssl"
+
+# Cerebras AI
+CEREBRAS_API_KEY="your-cerebras-api-key"
+
+# Google OAuth (optional)
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+
+# GitHub OAuth (optional)
+GITHUB_CLIENT_ID="your-github-client-id"
+GITHUB_CLIENT_SECRET="your-github-client-secret"
+```
+
+**Generate NEXTAUTH_SECRET:**
+```bash
+openssl rand -base64 32
+```
+
+### 3. Database Setup
+
+```bash
+# Generate Prisma Client
+npx prisma generate
+
+# Run migrations
+npx prisma migrate dev --name init
+
+# (Optional) Open Prisma Studio to view data
+npx prisma studio
+```
+
+### 4. Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see your app!
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+relio/
+├── prisma/
+│   └── schema.prisma          # Database schema
+├── public/                    # Static assets
+├── src/
+│   ├── app/
+│   │   ├── api/               # API routes
+│   │   │   ├── auth/          # NextAuth endpoints
+│   │   │   ├── upload/        # Resume upload
+│   │   │   ├── portfolio/     # Portfolio CRUD
+│   │   │   ├── dashboard/     # Dashboard data
+│   │   │   └── cleanup/       # Temp user cleanup
+│   │   ├── auth/              # Auth pages (signin/signup)
+│   │   ├── dashboard/         # User dashboard
+│   │   ├── try/               # Anonymous try mode
+│   │   ├── [username]/        # Dynamic portfolio pages
+│   │   ├── layout.tsx         # Root layout
+│   │   └── page.tsx           # Landing page
+│   ├── components/            # React components
+│   │   ├── PortfolioView.tsx
+│   │   ├── Providers.tsx
+│   │   └── ui/                # UI components
+│   ├── lib/                   # Utilities
+│   │   ├── ai.ts              # Cerebras integration
+│   │   ├── auth.ts            # NextAuth config
+│   │   ├── prisma.ts          # Prisma client
+│   │   └── utils.ts
+│   └── types/                 # TypeScript types
+└── package.json
+```
 
-## Learn More
+## 🔑 Key Features Explained
 
-To learn more about Next.js, take a look at the following resources:
+### 1. **Anonymous Try Mode** (`/try`)
+- Users can upload resumes without signing up
+- Temporary portfolios expire in 24 hours
+- Random username assigned (e.g., `temp-9281`)
+- Banner prompts signup to save permanently
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 2. **AI Resume Parsing**
+Cerebras AI extracts:
+- Personal info (name, contact, links)
+- Skills and technologies
+- Work experience with achievements
+- Education history
+- Projects with descriptions
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 3. **Authentication Flow**
+- Sign in with Google, GitHub, or email/password
+- After temp use, sign up to migrate portfolio
+- Protected dashboard and portfolio management
 
-## Deploy on Vercel
+### 4. **Dynamic Portfolios**
+- Each user gets `/[username]` route
+- Real-time portfolio rendering from database config
+- Responsive design with smooth animations
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 5. **Cleanup Job** (`/api/cleanup`)
+Set up a cron job (Vercel Cron or external service):
+```bash
+curl -X POST https://your-app.vercel.app/api/cleanup
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🎨 Customization
+
+### Add More Themes
+Edit `/components/PortfolioView.tsx` to add theme variants.
+
+### Modify AI Prompts
+Update `/lib/ai.ts` to customize resume parsing behavior.
+
+### Change Database Schema
+Modify `prisma/schema.prisma` and run:
+```bash
+npx prisma migrate dev --name your_migration_name
+```
+
+## 🚢 Deployment
+
+### Deploy to Vercel
+
+1. Push code to GitHub
+2. Import project to Vercel
+3. Add environment variables in Vercel dashboard
+4. Deploy!
+
+**Configure Cron Jobs:**
+Add to `vercel.json`:
+```json
+{
+  "crons": [{
+    "path": "/api/cleanup",
+    "schedule": "0 */6 * * *"
+  }]
+}
+```
+
+### Database Options
+- **Vercel Postgres** (recommended)
+- **Supabase**
+- **Neon**
+- **PlanetScale**
+- **Railway**
+
+## 🔧 Troubleshooting
+
+**Prisma Client Issues:**
+```bash
+npx prisma generate
+```
+
+**Database Connection Failed:**
+- Check `DATABASE_URL` format
+- Ensure PostgreSQL is running
+- Verify credentials
+
+**OAuth Not Working:**
+- Confirm redirect URIs in OAuth app settings
+- Check client ID/secret in `.env`
+
+**File Upload Errors:**
+- Ensure temp directory exists: `mkdir -p /tmp/uploads`
+- Check file size limits in Next.js config
+
+## 📚 API Reference
+
+### POST `/api/upload`
+Upload resume (PDF/DOCX) and parse with AI.
+
+### GET `/api/portfolio`
+Get user's portfolio config.
+
+### POST `/api/portfolio`
+Create/update portfolio.
+
+### POST `/api/cleanup`
+Delete expired temporary users.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## 📄 License
+
+MIT License - feel free to use for personal or commercial projects.
+
+## 🙏 Acknowledgments
+
+- [Next.js](https://nextjs.org/)
+- [Cerebras Cloud SDK](https://cerebras.ai/)
+- [Prisma](https://www.prisma.io/)
+- [NextAuth.js](https://next-auth.js.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+
+## 📧 Support
+
+For issues or questions, please open a GitHub issue or contact the maintainers.
+
+---
+
+Made with ❤️ by the Relio team
