@@ -2,41 +2,32 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Upload, Loader2, AlertCircle } from 'lucide-react'
-import Link from 'next/link'
+import { FileUpload } from '@/components/ui/file-upload'
 
 export default function TryPage() {
-  const router = useRouter()
-  const [file, setFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0]
-    if (selectedFile) {
-      if (selectedFile.type === 'application/pdf' || 
-          selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-        setFile(selectedFile)
-        setError('')
-      } else {
-        setError('Please upload a PDF or DOCX file')
-        setFile(null)
-      }
+  const handleFileUpload = async (files: File[]) => {
+    if (files.length === 0) return
+
+    const file = files[0]
+    
+    // Validate file type
+    if (!file.type.includes('pdf') && !file.name.endsWith('.docx')) {
+      setError('Please upload a PDF or DOCX file')
+      return
     }
-  }
-
-  const handleUpload = async () => {
-    if (!file) return
 
     setUploading(true)
-    setError('')
-
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('anonymous', 'true')
+    setError(null)
 
     try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('anonymous', 'true')
+
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
@@ -45,100 +36,61 @@ export default function TryPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        setError(data.error || 'Upload failed')
-        setUploading(false)
-        return
+        throw new Error(data.error || 'Failed to upload resume')
       }
 
-      // Redirect to temporary portfolio
+      // Redirect to the temporary portfolio
       router.push(`/${data.username}`)
     } catch (err) {
-      setError('An error occurred. Please try again.')
+      setError(err instanceof Error ? err.message : 'Failed to upload resume')
+    } finally {
       setUploading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black">
       <div className="container mx-auto px-4 py-16">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
-              Try Relio Without Signing Up
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              Try Relio Without Signup
             </h1>
-            <p className="text-xl text-muted-foreground">
-              Upload your resume and see your portfolio in seconds. No account required.
+            <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">
+              Upload your resume and get a portfolio website in seconds
             </p>
-            <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full">
-              <AlertCircle className="w-4 h-4 text-primary" />
-              <span className="text-sm text-primary font-medium">
-                Your portfolio will be deleted in 24 hours
-              </span>
-            </div>
+            <p className="text-sm text-amber-600 dark:text-amber-500">
+              ⚠️ Demo portfolios expire in 24 hours. Sign up to save permanently.
+            </p>
           </div>
 
-          <div className="bg-card rounded-lg border border-border shadow-xl p-8 space-y-6">
-            {error && (
-              <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded-md text-sm">
-                {error}
-              </div>
-            )}
+          <div className="mb-8">
+            <FileUpload onChange={handleFileUpload} />
+          </div>
 
-            <div className="border-2 border-dashed border-border rounded-lg p-12 text-center hover:border-primary transition-colors">
-              <input
-                type="file"
-                id="resume-upload"
-                accept=".pdf,.docx"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <label htmlFor="resume-upload" className="cursor-pointer">
-                <div className="flex flex-col items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Upload className="w-8 h-8 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-medium text-foreground mb-1">
-                      {file ? file.name : 'Click to upload your resume'}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      PDF or DOCX file up to 10MB
-                    </p>
-                  </div>
-                </div>
-              </label>
-            </div>
-
-            <Button
-              onClick={handleUpload}
-              disabled={!file || uploading}
-              className="w-full py-6 text-lg"
-              size="lg"
-            >
-              {uploading ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                'Create My Portfolio'
-              )}
-            </Button>
-
-            <div className="text-center pt-4">
-              <p className="text-sm text-muted-foreground mb-2">
-                Want to save your portfolio permanently?
+          {uploading && (
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white"></div>
+              <p className="mt-4 text-gray-600 dark:text-gray-400">
+                Processing your resume with AI...
               </p>
-              <Link href="/auth/signup" className="text-primary hover:underline font-medium">
-                Create a free account
-              </Link>
             </div>
-          </div>
+          )}
 
-          <div className="mt-8 text-center">
-            <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
-              ← Back to home
-            </Link>
+          {error && (
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-8">
+              <p className="text-red-800 dark:text-red-200">{error}</p>
+            </div>
+          )}
+
+          <div className="mt-12 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+              📄 Supported Formats
+            </h3>
+            <ul className="text-blue-800 dark:text-blue-200 space-y-1">
+              <li>✓ PDF files (.pdf)</li>
+              <li>✓ Word documents (.docx)</li>
+            </ul>
           </div>
         </div>
       </div>

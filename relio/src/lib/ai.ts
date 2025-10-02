@@ -119,26 +119,70 @@ export async function parseResumeToPortfolio(
       messages: [
         {
           role: 'system',
-          content: `You are an expert resume parser. Extract structured information from resumes and convert them into a JSON format suitable for a portfolio website. 
+          content: `You are an expert resume parser. Extract structured information from resumes and convert them into a JSON format suitable for a portfolio website.
           
-          Guidelines:
-          - Extract all personal information, skills, work experience, education, and projects
-          - Format dates consistently (e.g., "Jan 2020" or "2020")
-          - For the 'about' field, create a compelling professional summary if one doesn't exist
-          - Include all relevant contact information found
-          - Extract achievements as bullet points for each experience
-          - Identify technologies and skills mentioned throughout the resume
-          - Be thorough and accurate`,
+          CRITICAL: You MUST follow this EXACT structure:
+          
+          {
+            "name": "Full Name",
+            "title": "Job Title/Role",
+            "about": "Professional summary (2-3 sentences)",
+            "email": "email@example.com",
+            "phone": "+1234567890",
+            "location": "City, Country",
+            "linkedin": "linkedin.com/in/username",
+            "github": "github.com/username",
+            "website": "portfolio.com",
+            "skills": ["Skill1", "Skill2", "Skill3"],
+            "experience": [{
+              "company": "Company Name",
+              "position": "Job Title",
+              "startDate": "Jan 2020",
+              "endDate": "Dec 2022",
+              "description": "Brief description",
+              "achievements": ["Achievement 1", "Achievement 2"]
+            }],
+            "education": [{
+              "institution": "University Name",
+              "degree": "Bachelor's",
+              "field": "Computer Science",
+              "startDate": "2015",
+              "endDate": "2019",
+              "gpa": "3.8"
+            }],
+            "projects": [{
+              "name": "Project Name",
+              "description": "What it does",
+              "technologies": ["Tech1", "Tech2"],
+              "link": "https://project.com",
+              "github": "github.com/user/repo"
+            }]
+          }
+          
+          IMPORTANT RULES:
+          - "skills" MUST be a flat array of strings, NOT nested objects
+          - Do NOT create subcategories like "programmingLanguages", "frameworks", etc.
+          - Combine ALL skills into a single flat array
+          - Extract ALL programming languages, frameworks, tools, and technologies into the skills array
+          - Format dates as "MMM YYYY" (e.g., "Jan 2020") or just year
+          - If a field is missing, omit it (except required fields)
+          - For 'about', create a compelling 2-3 sentence summary if not in resume`,
         },
         {
           role: 'user',
-          content: `Parse this resume and extract the information:\n\n${resumeText}`,
+          content: `Parse this resume and extract the information. Remember: skills MUST be a flat array of strings, not nested objects.\n\nResume:\n${resumeText}`,
         },
       ],
-      response_format: { type: "json_object" },
-      temperature: 0.3,
-      // max_tokens: 4000,
-      stream: false,
+      response_format: {
+        type: 'json_schema',
+        json_schema: {
+          name: 'portfolio_config',
+          strict: true,
+          schema: portfolioSchema,
+        },
+      },
+      temperature: 0.2,
+      max_tokens: 4000,
     })
 
     const content = (response.choices as any)?.[0]?.message?.content
@@ -147,6 +191,19 @@ export async function parseResumeToPortfolio(
     }
 
     const config = JSON.parse(content) as PortfolioConfig
+    
+    // Validate that skills is a flat array (fallback just in case)
+    if (config.skills && typeof config.skills === 'object' && !Array.isArray(config.skills)) {
+      // If it's an object with nested arrays, flatten it
+      const flatSkills: string[] = []
+      Object.values(config.skills).forEach((value: any) => {
+        if (Array.isArray(value)) {
+          flatSkills.push(...value)
+        }
+      })
+      config.skills = [...new Set(flatSkills)] // Remove duplicates
+    }
+    
     return config
   } catch (error) {
     console.error('Error parsing resume with Cerebras:', error)
