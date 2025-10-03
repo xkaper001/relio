@@ -39,8 +39,8 @@ export default function TryPage() {
         throw new Error(data.error || 'Failed to upload resume')
       }
 
-      // Redirect to the temporary portfolio
-      router.push(`/${data.username}`)
+      // Redirect to the portfolio using its unique slug
+      router.push(`/${data.slug}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to upload resume')
     } finally {

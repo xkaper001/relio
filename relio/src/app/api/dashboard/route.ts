@@ -14,7 +14,12 @@ export async function GET(req: NextRequest) {
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       include: {
-        portfolio: true,
+        portfolios: {
+          orderBy: [
+            { isDefault: 'desc' },
+            { createdAt: 'desc' }
+          ]
+        },
       },
     })
 
@@ -31,7 +36,7 @@ export async function GET(req: NextRequest) {
         isTemporary: user.isTemporary,
         expiresAt: user.expiresAt,
       },
-      portfolio: user.portfolio,
+      portfolios: user.portfolios,
     })
   } catch (error) {
     console.error('Dashboard error:', error)

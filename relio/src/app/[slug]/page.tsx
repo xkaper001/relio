@@ -5,22 +5,24 @@ import type { PortfolioConfig } from '@/types'
 
 interface PageProps {
   params: Promise<{
-    username: string
+    slug: string
   }>
 }
 
-async function getPortfolio(username: string) {
+async function getPortfolio(slug: string) {
   try {
-    const user = await prisma.user.findUnique({
-      where: { username },
+    const portfolio = await prisma.portfolio.findUnique({
+      where: { slug },
       include: {
-        portfolio: true,
+        user: true,
       },
     })
 
-    if (!user || !user.portfolio) {
+    if (!portfolio) {
       return null
     }
+
+    const user = portfolio.user
 
     // Check if temporary portfolio has expired
     if (user.isTemporary && user.expiresAt) {
@@ -30,12 +32,12 @@ async function getPortfolio(username: string) {
     }
 
     return {
-      config: user.portfolio.config as unknown as PortfolioConfig,
+      config: portfolio.config as unknown as PortfolioConfig,
       isTemporary: user.isTemporary,
       expiresAt: user.expiresAt,
       username: user.username,
       userImage: user.image,
-      avatar: user.avatar,
+      avatar: portfolio.avatar,
     }
   } catch (error) {
     console.error('Error fetching portfolio:', error)
@@ -44,8 +46,8 @@ async function getPortfolio(username: string) {
 }
 
 export default async function PortfolioPage({ params }: PageProps) {
-  const { username } = await params
-  const portfolio = await getPortfolio(username)
+  const { slug } = await params
+  const portfolio = await getPortfolio(slug)
 
   if (!portfolio) {
     notFound()

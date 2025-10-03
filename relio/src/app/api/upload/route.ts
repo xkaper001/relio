@@ -3,9 +3,33 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { parseResumeToPortfolio, selectAvatarForUser } from '@/lib/ai'
-import { generateTempUsername } from '@/lib/utils'
+import { generateTempUsername, generateUniqueSlug } from '@/lib/utils'
 import pdfParse from 'pdf-parse';
 import mammoth from 'mammoth'
+
+// Helper function to generate a globally unique slug
+async function createUniqueSlug(baseName?: string): Promise<string> {
+  let attempts = 0
+  const maxAttempts = 10
+  
+  while (attempts < maxAttempts) {
+    const slug = generateUniqueSlug(baseName)
+    
+    // Check if slug is available
+    const existing = await prisma.portfolio.findUnique({
+      where: { slug },
+    })
+    
+    if (!existing) {
+      return slug
+    }
+    
+    attempts++
+  }
+  
+  // Fallback: use timestamp-based slug
+  return `portfolio-${Date.now()}-${Math.random().toString(36).substring(7)}`
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -66,27 +90,34 @@ export async function POST(req: NextRequest) {
       const expiresAt = new Date()
       expiresAt.setHours(expiresAt.getHours() + 24)
 
+      // Generate unique slug from resume name or job title
+      const slugBase = portfolioConfig.name || portfolioConfig.title
+      const uniqueSlug = await createUniqueSlug(slugBase)
+
       const user = await prisma.user.create({
         data: {
           username: tempUsername,
           isTemporary: true,
           expiresAt,
-          avatar: selectedAvatar,
-          portfolio: {
+          portfolios: {
             create: {
+              slug: uniqueSlug,
+              title: `${portfolioConfig.name}'s Portfolio`,
+              avatar: selectedAvatar,
+              isDefault: true,
               config: portfolioConfig as any,
             },
           },
         },
         include: {
-          portfolio: true,
+          portfolios: true,
         },
       })
 
       return NextResponse.json({
         success: true,
-        username: tempUsername,
-        portfolio: user.portfolio,
+        slug: uniqueSlug,
+        portfolio: user.portfolios[0],
         isTemporary: true,
         expiresAt: expiresAt.toISOString(),
       })
@@ -100,28 +131,37 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 })
       }
 
-      // Update avatar if user doesn't have one yet
-      if (!user.avatar) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { avatar: selectedAvatar },
-        })
-      }
+      // Generate unique slug from resume
+      const slugBase = portfolioConfig.name || portfolioConfig.title
+      const uniqueSlug = await createUniqueSlug(slugBase)
 
-      const portfolio = await prisma.portfolio.upsert({
-        where: { userId: user.id },
-        create: {
+      // Create new portfolio with avatar
+      const portfolio = await prisma.portfolio.create({
+        data: {
           userId: user.id,
-          config: portfolioConfig as any,
-        },
-        update: {
+          slug: uniqueSlug,
+          title: `${portfolioConfig.name}'s Portfolio`,
+          avatar: selectedAvatar,
+          isDefault: false, // Will be set to true if it's the first one
           config: portfolioConfig as any,
         },
       })
 
+      // If this is the first portfolio, mark it as default
+      const portfolioCount = await prisma.portfolio.count({
+        where: { userId: user.id },
+      })
+
+      if (portfolioCount === 1) {
+        await prisma.portfolio.update({
+          where: { id: portfolio.id },
+          data: { isDefault: true },
+        })
+      }
+
       return NextResponse.json({
         success: true,
-        username: user.username,
+        slug: uniqueSlug,
         portfolio,
         isTemporary: false,
       })

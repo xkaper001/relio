@@ -50,3 +50,33 @@ export function getRandomAvatar(): string {
 export function generateTempUsername(): string {
   return `temp_${Date.now()}_${Math.random().toString(36).substring(7)}`
 }
+
+export function generateUniqueSlug(baseName?: string): string {
+  // Generate a unique, URL-friendly slug
+  // Examples: "awesome-dev", "creative-designer", "tech-lead-247"
+  
+  if (baseName) {
+    // Clean and format the base name
+    const cleanBase = baseName
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Remove duplicate hyphens
+      .trim()
+      .substring(0, 20) // Limit length
+    
+    if (cleanBase.length >= 3) {
+      // Add a random number or adjective for uniqueness
+      const suffix = Math.floor(Math.random() * 1000)
+      return `${cleanBase}-${suffix}`
+    }
+  }
+  
+  // Generate a memorable slug like "swift-blue-eagle"
+  return uniqueNamesGenerator({
+    dictionaries: [adjectives, colors, animals],
+    separator: '-',
+    length: 3,
+    style: 'lowerCase'
+  })
+}

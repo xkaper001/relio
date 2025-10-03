@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
-import { generateUsername, getRandomAvatar } from '@/lib/utils'
+import { generateUsername } from '@/lib/utils'
 
 export async function POST(req: NextRequest) {
   try {
@@ -49,7 +49,6 @@ export async function POST(req: NextRequest) {
         email,
         password: hashedPassword,
         username,
-        avatar: getRandomAvatar(),
         isTemporary: false,
       },
     })

@@ -2,21 +2,28 @@
 
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ArrowLeft, Save, Loader2, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft, Save, Loader2, Plus, Trash2, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 import ImageUpload from '@/components/ImageUpload'
+import PortfolioView from '@/components/PortfolioView'
 import type { PortfolioConfig, Experience, Education, Project } from '@/types'
 
 export default function EditPortfolio() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const slug = searchParams.get('slug') || 'default'
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [portfolio, setPortfolio] = useState<PortfolioConfig | null>(null)
+  const [portfolioTitle, setPortfolioTitle] = useState('')
   const [userImage, setUserImage] = useState<string | null>(null)
+  const [avatar, setAvatar] = useState<string | null>(null)
+  const [username, setUsername] = useState<string>('')
+  const [showPreview, setShowPreview] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
@@ -24,24 +31,27 @@ export default function EditPortfolio() {
     if (status === 'authenticated') {
       fetchPortfolio()
     }
-  }, [status])
+  }, [status, slug])
 
   const fetchPortfolio = async () => {
     try {
-      const response = await fetch('/api/portfolio')
+      const response = await fetch(`/api/portfolio?slug=${slug}`)
       const data = await response.json()
       
       if (response.ok && data.portfolio) {
         setPortfolio(data.portfolio.config as PortfolioConfig)
+        setPortfolioTitle(data.portfolio.title)
+        setAvatar(data.portfolio.avatar)
       } else {
         setError('Portfolio not found')
       }
 
-      // Fetch user data for profile image
+      // Fetch user data for profile image and username
       const dashboardResponse = await fetch('/api/dashboard')
       const dashboardData = await dashboardResponse.json()
       if (dashboardResponse.ok && dashboardData.user) {
         setUserImage(dashboardData.user.image)
+        setUsername(dashboardData.user.username)
       }
     } catch (err) {
       setError('Failed to load portfolio')
@@ -63,7 +73,11 @@ export default function EditPortfolio() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(portfolio),
+        body: JSON.stringify({
+          slug,
+          title: portfolioTitle,
+          config: portfolio,
+        }),
       })
 
       if (response.ok) {
@@ -222,33 +236,55 @@ export default function EditPortfolio() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card sticky top-0 z-10">
+    <div className="min-h-screen bg-background flex flex-col">
+      <header className="border-b border-border bg-card sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/dashboard" className="flex items-center gap-2 text-foreground hover:text-primary">
               <ArrowLeft className="w-5 h-5" />
               <span className="font-medium">Back to Dashboard</span>
             </Link>
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Changes
-                </>
-              )}
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowPreview(!showPreview)}
+                className="hidden lg:flex"
+              >
+                {showPreview ? (
+                  <>
+                    <EyeOff className="w-4 h-4 mr-2" />
+                    Hide Preview
+                  </>
+                ) : (
+                  <>
+                    <Eye className="w-4 h-4 mr-2" />
+                    Show Preview
+                  </>
+                )}
+              </Button>
+              <Button onClick={handleSave} disabled={saving}>
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto space-y-8">
+      <div className="flex-1 flex overflow-hidden">
+        <div className="container mx-auto px-4 py-8 flex gap-8 overflow-hidden">
+          {/* Left Side - Edit Form (30%) */}
+          <div className="w-full lg:w-[30%] overflow-y-auto pr-4 space-y-6">
           <div>
             <h1 className="text-4xl font-bold text-foreground mb-2">
               Edit Your Portfolio
@@ -263,6 +299,26 @@ export default function EditPortfolio() {
               {error}
             </div>
           )}
+
+          {success && (
+            <div className="bg-green-500/10 border border-green-500 text-green-600 px-4 py-3 rounded-md text-sm">
+              {success}
+            </div>
+          )}
+
+          {/* Portfolio Title */}
+          <div className="bg-card rounded-lg border border-border p-6">
+            <h2 className="text-xl font-semibold text-foreground mb-4">Portfolio Title</h2>
+            <Input
+              value={portfolioTitle}
+              onChange={(e) => setPortfolioTitle(e.target.value)}
+              placeholder="My Portfolio"
+              className="mb-2"
+            />
+            <p className="text-xs text-muted-foreground">
+              This helps you identify this portfolio in your dashboard
+            </p>
+          </div>
 
           {success && (
             <div className="bg-green-500/10 border border-green-500 text-green-500 px-4 py-3 rounded-md text-sm">
@@ -624,7 +680,7 @@ export default function EditPortfolio() {
           </div>
 
           {/* Save Button at Bottom */}
-          <div className="flex justify-end gap-4">
+          <div className="flex justify-end gap-4 pt-6 sticky bottom-0 bg-background pb-4">
             <Link href="/dashboard">
               <Button variant="outline">Cancel</Button>
             </Link>
@@ -643,6 +699,27 @@ export default function EditPortfolio() {
             </Button>
           </div>
         </div>
+
+        {/* Right Side - Live Preview (70%) */}
+        {showPreview && (
+          <div className="hidden lg:block lg:w-[70%] overflow-y-auto">
+            <div className="sticky top-0 bg-card border border-border px-4 py-2 flex items-center justify-between z-10">
+              <h3 className="text-sm font-semibold text-foreground">Live Preview</h3>
+              <span className="text-xs text-muted-foreground">Updates in real-time</span>
+            </div>
+            {portfolio && (
+              <PortfolioView
+                config={portfolio}
+                isTemporary={false}
+                expiresAt={null}
+                username={username}
+                userImage={userImage}
+                avatar={avatar}
+              />
+            )}
+          </div>
+        )}
+      </div>
       </div>
     </div>
   )
