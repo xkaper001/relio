@@ -27,6 +27,7 @@ interface PortfolioViewProps {
   expiresAt: Date | null
   username: string
   userImage?: string | null
+  avatar?: string | null
 }
 
 export default function PortfolioView({ 
@@ -34,7 +35,8 @@ export default function PortfolioView({
   isTemporary, 
   expiresAt,
   username,
-  userImage
+  userImage,
+  avatar
 }: PortfolioViewProps) {
   const [timeLeft, setTimeLeft] = useState<string>('')
 
@@ -84,78 +86,59 @@ export default function PortfolioView({
 
       {/* Hero Section */}
       <section className="relative py-20 px-4 bg-black">
-        <div className="container mx-auto max-w-5xl">
-          <div className="text-center space-y-6">
-            {/* Profile Image */}
-            {userImage && (
-              <div className="flex justify-center mb-8">
-                <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-primary/20">
-                  <Image
-                    src={userImage}
-                    alt={config.name}
-                    width={160}
-                    height={160}
-                    className="object-cover w-full h-full"
-                  />
-                </div>
-              </div>
-            )}
-            {!userImage && (
-              <div className="flex justify-center mb-8">
-                <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-primary/20 bg-muted flex items-center justify-center">
-                  <User className="w-20 h-20 text-muted-foreground" />
-                </div>
-              </div>
-            )}
-            <h1 className="text-5xl sm:text-6xl font-bold text-foreground">
-              {config.name}
-            </h1>
-            <p className="text-2xl sm:text-3xl text-primary font-medium">
-              {config.title}
-            </p>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              {config.about}
-            </p>
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left Side - Hero Content */}
+            <div className="space-y-6">
+              <h1 className="text-5xl sm:text-6xl font-bold text-foreground">
+                {config.name}
+              </h1>
+              <p className="text-2xl sm:text-3xl text-primary font-medium">
+                {config.title}
+              </p>
+              <p className="text-xl text-muted-foreground leading-relaxed">
+                {config.about}
+              </p>
 
-            {/* Contact Info */}
-            <div className="flex flex-wrap items-center justify-center gap-6 pt-4">
-              {config.email && (
-                <a 
-                  href={`mailto:${config.email}`}
-                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Mail className="w-5 h-5" />
-                  <span className="text-sm">{config.email}</span>
-                </a>
-              )}
-              {config.phone && (
-                <a 
-                  href={`tel:${config.phone}`}
-                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Phone className="w-5 h-5" />
-                  <span className="text-sm">{config.phone}</span>
-                </a>
-              )}
-              {config.location && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <MapPin className="w-5 h-5" />
-                  <span className="text-sm">{config.location}</span>
-                </div>
-              )}
-            </div>
+              {/* Contact Info */}
+              <div className="flex flex-wrap items-start gap-6 pt-4">
+                {config.email && (
+                  <a 
+                    href={`mailto:${config.email}`}
+                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Mail className="w-5 h-5" />
+                    <span className="text-sm">{config.email}</span>
+                  </a>
+                )}
+                {config.phone && (
+                  <a 
+                    href={`tel:${config.phone}`}
+                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Phone className="w-5 h-5" />
+                    <span className="text-sm">{config.phone}</span>
+                  </a>
+                )}
+                {config.location && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <MapPin className="w-5 h-5" />
+                    <span className="text-sm">{config.location}</span>
+                  </div>
+                )}
+              </div>
 
-            {/* Social Links */}
-            <div className="flex items-center justify-center gap-4 pt-4">
-              {config.linkedin && (
-                <a
-                  href={config.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-3 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
-                >
-                  <Linkedin className="w-5 h-5 text-primary" />
-                </a>
+              {/* Social Links */}
+              <div className="flex items-center gap-4 pt-4">
+                {config.linkedin && (
+                  <a
+                    href={config.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-3 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
+                  >
+                    <Linkedin className="w-5 h-5 text-primary" />
+                  </a>
               )}
               {config.github && (
                 <a
@@ -179,6 +162,34 @@ export default function PortfolioView({
               )}
             </div>
           </div>
+
+          {/* Right Side - Avatar/Profile Image */}
+          <div className="flex items-center justify-center lg:justify-end">
+            {(userImage || avatar) && (
+              <div className="relative">
+                <div className="w-80 h-80 sm:w-96 sm:h-96 lg:w-[28rem] lg:h-[28rem] rounded-3xl overflow-hidden shadow-2xl">
+                  <Image
+                    src={userImage || avatar!}
+                    alt={config.name}
+                    width={448}
+                    height={448}
+                    className="object-contain w-full h-full"
+                  />
+                </div>
+                {/* Decorative gradient background */}
+                <div className="absolute -inset-4 bg-gradient-to-br from-primary/20 via-transparent to-primary/10 rounded-3xl -z-10 blur-2xl" />
+              </div>
+            )}
+            {!userImage && !avatar && (
+              <div className="relative">
+                <div className="w-80 h-80 sm:w-96 sm:h-96 lg:w-[28rem] lg:h-[28rem] rounded-3xl overflow-hidden bg-muted flex items-center justify-center shadow-2xl">
+                  <User className="w-32 h-32 text-muted-foreground" />
+                </div>
+                <div className="absolute -inset-4 bg-gradient-to-br from-primary/20 via-transparent to-primary/10 rounded-3xl -z-10 blur-2xl" />
+              </div>
+            )}
+          </div>
+        </div>
         </div>
       </section>
 

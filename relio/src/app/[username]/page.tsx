@@ -35,6 +35,7 @@ async function getPortfolio(username: string) {
       expiresAt: user.expiresAt,
       username: user.username,
       userImage: user.image,
+      avatar: user.avatar,
     }
   } catch (error) {
     console.error('Error fetching portfolio:', error)

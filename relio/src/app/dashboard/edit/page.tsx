@@ -21,12 +21,10 @@ export default function EditPortfolio() {
   const [success, setSuccess] = useState('')
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin')
-    } else if (status === 'authenticated') {
+    if (status === 'authenticated') {
       fetchPortfolio()
     }
-  }, [status, router])
+  }, [status])
 
   const fetchPortfolio = async () => {
     try {

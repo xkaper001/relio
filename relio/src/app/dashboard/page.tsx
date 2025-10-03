@@ -18,12 +18,10 @@ export default function Dashboard() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin')
-    } else if (status === 'authenticated') {
+    if (status === 'authenticated') {
       fetchDashboardData()
     }
-  }, [status, router])
+  }, [status])
 
   const fetchDashboardData = async () => {
     try {

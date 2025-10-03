@@ -1,9 +1,14 @@
+'use client'
+
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { ArrowRight, Sparkles, FileText, Wand2, Globe, CheckCircle, Github } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import PixelBlast from '@/components/PixelBlast'
 
 export default function Home() {
+  const { data: session } = useSession()
+
   return (
     <div className="min-h-screen bg-black">
       {/* Hero Section */}
@@ -75,15 +80,15 @@ export default function Home() {
 
             {/* CTA Buttons */}
             <div className="flex gap-4 items-center mt-8">
-              <Link href="/auth/signin">
+              <Link href={session ? '/dashboard' : '/auth/signin'}>
                 <Button variant="default" size="lg">
-                  Get Started Free
+                  {session ? 'Go to Dashboard' : 'Get Started Free'}
                 </Button>
               </Link>
               
-              <Link href="/try">
+              <Link href={session ? '/dashboard' : '/try'}>
                 <Button variant="outline" size="lg">
-                  Try Without Signup
+                  {session ? 'Upload Resume' : 'Try Without Signup'}
                 </Button>
               </Link>
             </div>
@@ -183,9 +188,9 @@ export default function Home() {
             Join thousands of professionals who are already using Relio to showcase their work
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/auth/signin">
+            <Link href={session ? '/dashboard' : '/auth/signin'}>
               <Button size="lg" className="text-lg">
-                Create Your Portfolio
+                {session ? 'Go to Dashboard' : 'Create Your Portfolio'}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>

@@ -1,19 +1,43 @@
 'use client'
 
-import { useState } from 'react'
-import { signIn } from 'next-auth/react'
+import { useState, useEffect } from 'react'
+import { signIn, useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Github, Mail } from 'lucide-react'
+import { Github, Mail, Loader2 } from 'lucide-react'
+import PrismaticBurst from '@/components/PrismaticBurst'
 
 export default function SignIn() {
   const router = useRouter()
+  const { data: session, status } = useSession()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [oauthLoading, setOauthLoading] = useState<string | null>(null)
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.push('/dashboard')
+    }
+  }, [status, router])
+
+  // Show loading screen while checking authentication
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  // Don't render if already authenticated
+  if (status === 'authenticated') {
+    return null
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,19 +53,51 @@ export default function SignIn() {
 
       if (result?.error) {
         setError('Invalid email or password')
-      } else {
-        router.push('/dashboard')
+        setLoading(false)
+      } else if (result?.ok) {
+        // Wait a moment for session to update, then redirect
+        setTimeout(() => {
+          router.push('/dashboard')
+          router.refresh()
+        }, 100)
       }
     } catch (err) {
       setError('An error occurred. Please try again.')
-    } finally {
       setLoading(false)
     }
   }
 
+  const handleOAuthSignIn = async (provider: 'google' | 'github') => {
+    setOauthLoading(provider)
+    setError('')
+    try {
+      await signIn(provider, { callbackUrl: '/dashboard' })
+    } catch (err) {
+      setError(`Failed to sign in with ${provider}. Please try again.`)
+      setOauthLoading(null)
+    }
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black px-4">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
+      {/* PrismaticBurst Background */}
+      <div className="absolute inset-0 w-full h-full">
+        <PrismaticBurst
+          animationType="rotate3d"
+          intensity={2}
+          speed={0.5}
+          distort={1.0}
+          paused={false}
+          offset={{ x: 0, y: 0 }}
+          hoverDampness={0.25}
+          rayCount={24}
+          mixBlendMode="lighten"
+          colors={['#B19EEF', '#8B5CF6', '#C084FC']}
+        />
+      </div>
+      
+      {/* Content */}
+      <div className="max-w-md w-full space-y-8 relative z-10">
         <div className="text-center">
           <h2 className="text-4xl font-bold text-white">Welcome Back</h2>
           <p className="mt-2 text-white/60">Sign in to your Relio account</p>
@@ -58,19 +114,29 @@ export default function SignIn() {
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+              onClick={() => handleOAuthSignIn('google')}
+              disabled={loading || oauthLoading !== null}
             >
-              <Mail className="w-5 h-5 mr-2" />
-              Continue with Google
+              {oauthLoading === 'google' ? (
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              ) : (
+                <Mail className="w-5 h-5 mr-2" />
+              )}
+              {oauthLoading === 'google' ? 'Signing in...' : 'Continue with Google'}
             </Button>
             
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => signIn('github', { callbackUrl: '/dashboard' })}
+              onClick={() => handleOAuthSignIn('github')}
+              disabled={loading || oauthLoading !== null}
             >
-              <Github className="w-5 h-5 mr-2" />
-              Continue with GitHub
+              {oauthLoading === 'github' ? (
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              ) : (
+                <Github className="w-5 h-5 mr-2" />
+              )}
+              {oauthLoading === 'github' ? 'Signing in...' : 'Continue with GitHub'}
             </Button>
           </div>
 
@@ -119,8 +185,15 @@ export default function SignIn() {
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign In'}
+            <Button type="submit" className="w-full" disabled={loading || oauthLoading !== null}>
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                'Sign In'
+              )}
             </Button>
           </form>
 

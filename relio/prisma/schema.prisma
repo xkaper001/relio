@@ -43,6 +43,7 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
+  avatar        String?   // Random avatar from 001-100
   password      String?
   username      String    @unique
   isTemporary   Boolean   @default(false)

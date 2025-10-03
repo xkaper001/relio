@@ -1,4 +1,5 @@
 import Cerebras from '@cerebras/cerebras_cloud_sdk'
+import avatarDescriptions from '@/data/avatar-descriptions.json'
 
 const client = new Cerebras({
   apiKey: process.env.CEREBRAS_API_KEY || '',
@@ -242,4 +243,82 @@ export async function generateAboutMe(
     console.error('Error generating About Me:', error)
     return `${name} is a ${title} with expertise in ${skills.slice(0, 3).join(', ')}.`
   }
+}
+
+export async function selectAvatarForUser(
+  portfolioConfig: PortfolioConfig
+): Promise<string> {
+  try {
+    // Create a profile summary from the portfolio
+    const profileSummary = {
+      name: portfolioConfig.name,
+      title: portfolioConfig.title,
+      about: portfolioConfig.about,
+      skills: portfolioConfig.skills?.slice(0, 10) || [],
+      topExperience: portfolioConfig.experience?.[0] || null,
+      interests: portfolioConfig.projects?.slice(0, 3).map(p => p.name) || []
+    }
+
+    const response = await client.chat.completions.create({
+      model: 'llama3.1-8b',
+      messages: [
+        {
+          role: 'system',
+          content: `You are an expert at matching people to avatar illustrations based on their professional profile.
+
+Given a user's profile and a list of 100 avatar illustrations, select the ONE avatar number (001-100) that best represents them.
+
+Consider:
+- Gender indicators in the profile (name, pronouns, etc.)
+- Professional context (technical/creative roles might match with tech accessories like laptops, cameras)
+- Personality indicators (formal roles → suits, creative roles → casual/artistic styles)
+- Activities mentioned (sports, music, tech, etc.)
+- General professional vibe (formal, casual, creative, athletic)
+
+Available avatars: ${JSON.stringify(avatarDescriptions, null, 2)}
+
+CRITICAL: Return ONLY a JSON object with this exact structure:
+{
+  "avatarNumber": "042",
+  "reason": "Brief explanation of why this avatar matches"
+}
+
+The avatarNumber MUST be a 3-digit string from 001 to 100.`,
+        },
+        {
+          role: 'user',
+          content: `Select the best avatar for this person:\n\n${JSON.stringify(profileSummary, null, 2)}`,
+        },
+      ],
+      temperature: 0.3,
+      max_tokens: 300,
+    })
+
+    const content = (response.choices as any)?.[0]?.message?.content
+    if (!content) {
+      console.warn('No avatar selection response, using random')
+      return getRandomAvatarNumber()
+    }
+
+    // Parse the response
+    const result = JSON.parse(content.trim())
+    const avatarNumber = result.avatarNumber || result.avatar_number
+
+    if (avatarNumber && /^\d{3}$/.test(avatarNumber) && parseInt(avatarNumber) >= 1 && parseInt(avatarNumber) <= 100) {
+      console.log(`🎨 Avatar selected: ${avatarNumber} - ${result.reason}`)
+      return `/avatars/${avatarNumber}.svg`
+    } else {
+      console.warn('Invalid avatar number in response, using random')
+      return getRandomAvatarNumber()
+    }
+  } catch (error) {
+    console.error('Error selecting avatar:', error)
+    return getRandomAvatarNumber()
+  }
+}
+
+function getRandomAvatarNumber(): string {
+  const avatarNumber = Math.floor(Math.random() * 100) + 1
+  const avatarId = avatarNumber.toString().padStart(3, '0')
+  return `/avatars/${avatarId}.svg`
 }

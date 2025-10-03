@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { parseResumeToPortfolio } from '@/lib/ai'
+import { parseResumeToPortfolio, selectAvatarForUser } from '@/lib/ai'
 import { generateTempUsername } from '@/lib/utils'
 import pdfParse from 'pdf-parse';
 import mammoth from 'mammoth'
@@ -54,6 +54,10 @@ export async function POST(req: NextRequest) {
 
     // Parse resume with AI
     const portfolioConfig = await parseResumeToPortfolio(resumeText)
+    
+    // Select intelligent avatar based on resume content
+    const selectedAvatar = await selectAvatarForUser(portfolioConfig)
+    console.log('🎨 Selected avatar:', selectedAvatar)
 
     // Handle anonymous vs authenticated user
     if (isAnonymous || !session) {
@@ -67,6 +71,7 @@ export async function POST(req: NextRequest) {
           username: tempUsername,
           isTemporary: true,
           expiresAt,
+          avatar: selectedAvatar,
           portfolio: {
             create: {
               config: portfolioConfig as any,
@@ -93,6 +98,14 @@ export async function POST(req: NextRequest) {
 
       if (!user) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      }
+
+      // Update avatar if user doesn't have one yet
+      if (!user.avatar) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { avatar: selectedAvatar },
+        })
       }
 
       const portfolio = await prisma.portfolio.upsert({
