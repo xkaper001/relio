@@ -79,7 +79,7 @@ export default function PortfolioView({
       )}
 
       {/* Hero Section */}
-      <section className="relative py-20 px-4 bg-gradient-to-br from-background via-background to-primary/5">
+      <section className="relative py-20 px-4 bg-black">
         <div className="container mx-auto max-w-5xl">
           <div className="text-center space-y-6">
             <h1 className="text-5xl sm:text-6xl font-bold text-foreground">
