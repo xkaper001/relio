@@ -3,10 +3,14 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { FileUpload } from '@/components/ui/file-upload'
+import ProcessingAnimation from '@/components/ProcessingAnimation'
 
 export default function TryPage() {
   const [uploading, setUploading] = useState(false)
+  const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [aiProcessingTime, setAiProcessingTime] = useState<number>(0)
+  const [portfolioSlug, setPortfolioSlug] = useState<string | null>(null)
   const router = useRouter()
 
   const handleFileUpload = async (files: File[]) => {
@@ -28,10 +32,12 @@ export default function TryPage() {
       formData.append('file', file)
       formData.append('anonymous', 'true')
 
+      const startTime = Date.now()
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       })
+      const endTime = Date.now()
 
       const data = await response.json()
 
@@ -39,17 +45,40 @@ export default function TryPage() {
         throw new Error(data.error || 'Failed to upload resume')
       }
 
-      // Redirect to the portfolio using its unique slug
-      router.push(`/${data.slug}`)
+      // Upload complete, now processing
+      setUploading(false)
+      setProcessing(true)
+
+      // Calculate actual AI processing time
+      const processingTime = (endTime - startTime) / 1000
+      setAiProcessingTime(processingTime)
+      
+      // Store the slug and let the animation complete before redirecting
+      setPortfolioSlug(data.slug)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to upload resume')
-    } finally {
       setUploading(false)
+      setProcessing(false)
+    }
+  }
+
+  const handleAnimationComplete = () => {
+    if (portfolioSlug) {
+      router.push(`/${portfolioSlug}`)
     }
   }
 
   return (
     <div className="min-h-screen bg-black">
+      {/* Show processing animation when processing */}
+      {processing && portfolioSlug && (
+        <ProcessingAnimation 
+          aiProcessingTime={aiProcessingTime}
+          portfolioSlug={portfolioSlug}
+          onComplete={handleAnimationComplete}
+        />
+      )}
+
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
@@ -72,7 +101,7 @@ export default function TryPage() {
             <div className="text-center py-8">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
               <p className="mt-4 text-gray-400">
-                Processing your resume with AI...
+                Uploading your resume...
               </p>
             </div>
           )}

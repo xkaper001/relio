@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Upload, ExternalLink, Edit, Loader2, LogOut, Plus, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { FileUpload } from '@/components/ui/file-upload'
+import ProcessingAnimation from '@/components/ProcessingAnimation'
 import type { PortfolioConfig } from '@/types'
 
 interface Portfolio {
@@ -25,9 +26,12 @@ export default function Dashboard() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
+  const [processing, setProcessing] = useState(false)
   const [portfolios, setPortfolios] = useState<Portfolio[]>([])
   const [file, setFile] = useState<File | null>(null)
   const [error, setError] = useState('')
+  const [aiProcessingTime, setAiProcessingTime] = useState<number>(0)
+  const [portfolioSlug, setPortfolioSlug] = useState<string>('')
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -80,26 +84,43 @@ export default function Dashboard() {
     formData.append('anonymous', 'false')
 
     try {
+      const startTime = Date.now()
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       })
+      const endTime = Date.now()
 
       const data = await response.json()
 
       if (!response.ok) {
         setError(data.error || 'Upload failed')
+        setUploading(false)
         return
       }
 
-      // Refresh portfolios list
-      await fetchDashboardData()
-      setFile(null)
+      // Upload complete, now processing
+      setUploading(false)
+      setProcessing(true)
+
+      // Calculate actual AI processing time
+      const processingTime = (endTime - startTime) / 1000
+      setAiProcessingTime(processingTime)
+      setPortfolioSlug(data.slug)
+
+      // Don't refresh immediately, let animation complete
     } catch (err) {
       setError('An error occurred. Please try again.')
-    } finally {
       setUploading(false)
+      setProcessing(false)
     }
+  }
+
+  const handleAnimationComplete = async () => {
+    // Refresh portfolios list after animation
+    await fetchDashboardData()
+    setFile(null)
+    setProcessing(false)
   }
 
   const handleDeletePortfolio = async (slug: string) => {
@@ -150,6 +171,15 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Show processing animation when processing */}
+      {processing && portfolioSlug && (
+        <ProcessingAnimation 
+          aiProcessingTime={aiProcessingTime}
+          portfolioSlug={portfolioSlug}
+          onComplete={handleAnimationComplete}
+        />
+      )}
+
       {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4">
