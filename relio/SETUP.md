@@ -106,8 +106,13 @@ DATABASE_URL="postgresql://..."
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="generate-with-openssl-rand-base64-32"
 
-# Cerebras AI
+# Cerebras AI (Required for resume parsing)
 CEREBRAS_API_KEY="your-cerebras-api-key"
+
+# Cloudinary (Required for profile images)
+CLOUDINARY_CLOUD_NAME="your-cloud-name"
+CLOUDINARY_API_KEY="your-api-key"
+CLOUDINARY_API_SECRET="your-api-secret"
 
 # OAuth (Optional)
 GOOGLE_CLIENT_ID="..."
@@ -122,6 +127,13 @@ GITHUB_CLIENT_SECRET="..."
 openssl rand -base64 32
 ```
 
+## Cloudinary Setup (for Profile Images)
+
+1. Sign up at https://cloudinary.com (free tier available)
+2. Get credentials from your dashboard
+3. Add them to your `.env` file
+4. See `PROFILE_IMAGE_QUICKSTART.md` for detailed setup
+
 ## Next Steps After Setup
 
 1. Visit http://localhost:3000
@@ -129,6 +141,7 @@ openssl rand -base64 32
 3. Upload a resume (PDF or DOCX)
 4. Check the generated portfolio
 5. Sign up to save it permanently
+6. Edit your portfolio and add a profile picture!
 
 ## Database Schemas Created
 

@@ -203,12 +203,20 @@ export default function Dashboard() {
                       Your portfolio is live and ready to share
                     </p>
                   </div>
-                  <Link href={`/${session?.user?.username}`} target="_blank">
-                    <Button variant="outline">
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      View Live
-                    </Button>
-                  </Link>
+                  <div className="flex gap-2">
+                    <Link href="/dashboard/edit">
+                      <Button variant="outline">
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit
+                      </Button>
+                    </Link>
+                    <Link href={`/${session?.user?.username}`} target="_blank">
+                      <Button variant="outline">
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        View Live
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
 
                 <div className="bg-muted/30 rounded-lg p-6 mb-6">

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { 
   Mail, 
@@ -15,7 +16,8 @@ import {
   AlertCircle,
   Briefcase,
   GraduationCap,
-  Code
+  Code,
+  User
 } from 'lucide-react'
 import type { PortfolioConfig } from '@/types'
 
@@ -24,13 +26,15 @@ interface PortfolioViewProps {
   isTemporary: boolean
   expiresAt: Date | null
   username: string
+  userImage?: string | null
 }
 
 export default function PortfolioView({ 
   config, 
   isTemporary, 
   expiresAt,
-  username 
+  username,
+  userImage
 }: PortfolioViewProps) {
   const [timeLeft, setTimeLeft] = useState<string>('')
 
@@ -82,6 +86,27 @@ export default function PortfolioView({
       <section className="relative py-20 px-4 bg-black">
         <div className="container mx-auto max-w-5xl">
           <div className="text-center space-y-6">
+            {/* Profile Image */}
+            {userImage && (
+              <div className="flex justify-center mb-8">
+                <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-primary/20">
+                  <Image
+                    src={userImage}
+                    alt={config.name}
+                    width={160}
+                    height={160}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+              </div>
+            )}
+            {!userImage && (
+              <div className="flex justify-center mb-8">
+                <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-primary/20 bg-muted flex items-center justify-center">
+                  <User className="w-20 h-20 text-muted-foreground" />
+                </div>
+              </div>
+            )}
             <h1 className="text-5xl sm:text-6xl font-bold text-foreground">
               {config.name}
             </h1>
