@@ -1,29 +1,39 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator'
+import { uniqueNamesGenerator, adjectives, colors, animals, NumberDictionary } from 'unique-names-generator'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+const numberDictionary = NumberDictionary.generate({ min: 100, max: 999 })
+
 export function generateUsername(name?: string): string {
-  // If a name is provided, use it as base
+  // If a name is provided, use it as base with unique-names-generator
   if (name) {
     const cleanName = name
       .toLowerCase()
       .replace(/[^a-z0-9]/g, '')
       .trim()
-      .substring(0, 15) // Limit length
+      .substring(0, 12) // Limit length to leave room for unique suffix
     
-    const randomNum = Math.floor(Math.random() * 1000)
-    return `${cleanName}${randomNum}`
+    if (cleanName.length >= 3) {
+      // If we have a good name, add a unique adjective or number
+      const suffix = uniqueNamesGenerator({
+        dictionaries: [adjectives],
+        length: 1,
+        style: 'lowerCase'
+      })
+      return `${cleanName}${suffix}`
+    }
   }
   
-  // Otherwise, generate a fun unique username
+  // Generate a fun, memorable unique username
+  // Examples: "swiftbluewhale", "happygoldenpanda", "quicksilverfalcon"
   return uniqueNamesGenerator({
     dictionaries: [adjectives, colors, animals],
-    separator: '',
-    length: 2,
+    separator: '-',
+    length: 3,
     style: 'lowerCase'
   })
 }
