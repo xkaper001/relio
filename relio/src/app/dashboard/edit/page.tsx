@@ -11,6 +11,16 @@ import ImageUpload from '@/components/ImageUpload'
 import PortfolioView from '@/components/PortfolioView'
 import type { PortfolioConfig, Experience, Education, Project } from '@/types'
 
+// Helper function to ensure URLs have proper protocol
+const ensureHttps = (url: string): string => {
+  if (!url) return url
+  const trimmedUrl = url.trim()
+  if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
+    return trimmedUrl
+  }
+  return `https://${trimmedUrl}`
+}
+
 export default function EditPortfolio() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -68,6 +78,19 @@ export default function EditPortfolio() {
     setSuccess('')
 
     try {
+      // Normalize URLs before saving
+      const normalizedConfig = {
+        ...portfolio,
+        linkedin: portfolio.linkedin ? ensureHttps(portfolio.linkedin) : '',
+        github: portfolio.github ? ensureHttps(portfolio.github) : '',
+        website: portfolio.website ? ensureHttps(portfolio.website) : '',
+        projects: portfolio.projects.map(project => ({
+          ...project,
+          link: project.link ? ensureHttps(project.link) : '',
+          github: project.github ? ensureHttps(project.github) : '',
+        })),
+      }
+
       const response = await fetch('/api/portfolio', {
         method: 'PUT',
         headers: {
@@ -76,7 +99,7 @@ export default function EditPortfolio() {
         body: JSON.stringify({
           slug,
           title: portfolioTitle,
-          config: portfolio,
+          config: normalizedConfig,
         }),
       })
 
@@ -410,7 +433,7 @@ export default function EditPortfolio() {
                 <Input
                   value={portfolio.linkedin || ''}
                   onChange={(e) => updateField('linkedin', e.target.value)}
-                  placeholder="linkedin.com/in/yourprofile"
+                  placeholder="https://linkedin.com/in/yourprofile"
                 />
               </div>
               <div>
@@ -418,7 +441,7 @@ export default function EditPortfolio() {
                 <Input
                   value={portfolio.github || ''}
                   onChange={(e) => updateField('github', e.target.value)}
-                  placeholder="github.com/yourusername"
+                  placeholder="https://github.com/yourusername"
                 />
               </div>
               <div>
@@ -426,7 +449,7 @@ export default function EditPortfolio() {
                 <Input
                   value={portfolio.website || ''}
                   onChange={(e) => updateField('website', e.target.value)}
-                  placeholder="yourwebsite.com"
+                  placeholder="https://yourwebsite.com"
                 />
               </div>
             </div>

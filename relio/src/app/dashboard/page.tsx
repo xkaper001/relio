@@ -13,6 +13,7 @@ interface Portfolio {
   id: string
   slug: string
   title: string
+  template: string
   isDefault: boolean
   config: PortfolioConfig
   createdAt: string
@@ -116,6 +117,26 @@ export default function Dashboard() {
       }
     } catch (err) {
       setError('An error occurred while deleting')
+    }
+  }
+
+  const handleTemplateChange = async (slug: string, template: string) => {
+    try {
+      const response = await fetch('/api/portfolio', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ slug, template }),
+      })
+
+      if (response.ok) {
+        await fetchDashboardData()
+      } else {
+        setError('Failed to update template')
+      }
+    } catch (err) {
+      setError('An error occurred while updating template')
     }
   }
 
@@ -268,7 +289,7 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                       <div>
                         <p className="text-muted-foreground mb-1">Name</p>
                         <p className="font-medium">{portfolio.config.name}</p>
@@ -295,6 +316,70 @@ export default function Dashboard() {
                           )}
                         </div>
                       </div>
+                    </div>
+
+                    {/* Template Selector */}
+                    <div className="pt-4 border-t border-border">
+                      <label className="text-sm text-muted-foreground mb-2 block">
+                        Portfolio Design Template
+                      </label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          onClick={() => handleTemplateChange(portfolio.slug, 'default')}
+                          className={`p-4 rounded-lg border-2 transition-all text-left ${
+                            portfolio.template === 'default'
+                              ? 'border-primary bg-primary/5'
+                              : 'border-border hover:border-primary/50'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-semibold text-sm">Classic</span>
+                            {portfolio.template === 'default' && (
+                              <svg className="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Clean & professional design
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            <span className="px-1.5 py-0.5 bg-muted text-xs rounded">Fast</span>
+                            <span className="px-1.5 py-0.5 bg-muted text-xs rounded">Simple</span>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => handleTemplateChange(portfolio.slug, 'animated')}
+                          className={`p-4 rounded-lg border-2 transition-all text-left ${
+                            portfolio.template === 'animated'
+                              ? 'border-primary bg-primary/5'
+                              : 'border-border hover:border-primary/50'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-semibold text-sm">Animated</span>
+                            {portfolio.template === 'animated' && (
+                              <svg className="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Modern with smooth animations
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            <span className="px-1.5 py-0.5 bg-muted text-xs rounded">✨ Effects</span>
+                            <span className="px-1.5 py-0.5 bg-muted text-xs rounded">Creative</span>
+                          </div>
+                        </button>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {portfolio.template === 'animated' 
+                          ? '🎨 Your portfolio uses smooth animations and aurora background'
+                          : '📄 Your portfolio uses a clean, professional layout'
+                        }
+                      </p>
                     </div>
                   </div>
                 ))}

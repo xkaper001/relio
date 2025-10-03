@@ -69,6 +69,7 @@ model Portfolio {
   title     String   @default("My Portfolio")
   slug      String   @unique  // Globally unique slug (e.g., "awesome-dev", "creative-designer")
   avatar    String?  // AI-selected avatar from 001-100 (e.g., "/avatars/042.svg")
+  template  String   @default("default") // Template style: "default", "animated", "minimal", etc.
   isDefault Boolean  @default(false)
   config    Json
   createdAt DateTime @default(now())

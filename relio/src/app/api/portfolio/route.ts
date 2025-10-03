@@ -11,7 +11,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { slug, config, title } = await req.json()
+    const { slug, config, title, template } = await req.json()
 
     if (!slug) {
       return NextResponse.json({ error: 'Slug is required' }, { status: 400 })
@@ -39,6 +39,7 @@ export async function PUT(req: NextRequest) {
       data: {
         config: config as any,
         ...(title && { title }),
+        ...(template && { template }),
       },
     })
 

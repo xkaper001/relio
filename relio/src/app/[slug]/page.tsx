@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import PortfolioView from '@/components/PortfolioView'
+import PortfolioViewAnimated from '@/components/PortfolioViewAnimated'
 import type { PortfolioConfig } from '@/types'
 
 interface PageProps {
@@ -38,6 +39,7 @@ async function getPortfolio(slug: string) {
       username: user.username,
       userImage: user.image,
       avatar: portfolio.avatar,
+      template: portfolio.template || 'default',
     }
   } catch (error) {
     console.error('Error fetching portfolio:', error)
@@ -53,5 +55,10 @@ export default async function PortfolioPage({ params }: PageProps) {
     notFound()
   }
 
-  return <PortfolioView {...portfolio} />
+  // Select template component based on portfolio.template
+  const TemplateComponent = portfolio.template === 'animated' 
+    ? PortfolioViewAnimated 
+    : PortfolioView
+
+  return <TemplateComponent {...portfolio} />
 }

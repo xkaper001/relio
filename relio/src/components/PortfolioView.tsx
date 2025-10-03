@@ -21,6 +21,16 @@ import {
 } from 'lucide-react'
 import type { PortfolioConfig } from '@/types'
 
+// Helper function to ensure URLs have proper protocol
+const ensureHttps = (url: string): string => {
+  if (!url) return url
+  const trimmedUrl = url.trim()
+  if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
+    return trimmedUrl
+  }
+  return `https://${trimmedUrl}`
+}
+
 interface PortfolioViewProps {
   config: PortfolioConfig
   isTemporary: boolean
@@ -132,7 +142,7 @@ export default function PortfolioView({
               <div className="flex items-center gap-4 pt-4">
                 {config.linkedin && (
                   <a
-                    href={config.linkedin}
+                    href={ensureHttps(config.linkedin)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-3 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
@@ -142,7 +152,7 @@ export default function PortfolioView({
               )}
               {config.github && (
                 <a
-                  href={config.github}
+                  href={ensureHttps(config.github)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-3 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
@@ -152,7 +162,7 @@ export default function PortfolioView({
               )}
               {config.website && (
                 <a
-                  href={config.website}
+                  href={ensureHttps(config.website)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-3 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
@@ -327,7 +337,7 @@ export default function PortfolioView({
                   <div className="flex gap-3">
                     {project.link && (
                       <a
-                        href={project.link}
+                        href={ensureHttps(project.link)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 text-primary hover:underline text-sm"
@@ -338,7 +348,7 @@ export default function PortfolioView({
                     )}
                     {project.github && (
                       <a
-                        href={project.github}
+                        href={ensureHttps(project.github)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 text-primary hover:underline text-sm"
