@@ -169,7 +169,16 @@ export async function parseResumeToPortfolio(
           - Extract ALL programming languages, frameworks, tools, and technologies into the skills array
           - Format dates as "MMM YYYY" (e.g., "Jan 2020") or just year
           - If a field is missing, omit it (except required fields)
-          - For 'about', create a compelling 2-3 sentence summary if not in resume`,
+          - For 'about', create a compelling 2-3 sentence summary if not in resume
+          
+          PROJECT LINKS RULES:
+          - For projects, use the "name" field for the actual project name ONLY
+          - Do NOT put URLs in the "name" field
+          - Use the "link" field for live demo/deployment URLs (e.g., https://myapp.com)
+          - Use the "github" field for GitHub repository URLs
+          - If there is no live link or deployment URL for a project, leave "link" field empty/omitted
+          - Do NOT duplicate the same URL in both "name" and "link" fields
+          - Do NOT use GitHub URLs in the "link" field - those belong in the "github" field`,
         },
         {
           role: 'user',
