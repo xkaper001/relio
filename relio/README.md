@@ -20,7 +20,7 @@
 - **Database**: PostgreSQL with Prisma ORM
 - **Authentication**: NextAuth.js (Google, GitHub, Credentials)
 - **AI**: Cerebras Cloud SDK for resume parsing
-- **File Parsing**: pdf-parse, mammoth (PDF/DOCX support)
+- **File Parsing**: unpdf (PDF text & URL extraction), mammoth (DOCX support)
 - **Deployment**: Vercel (recommended)
 
 ## 📋 Prerequisites

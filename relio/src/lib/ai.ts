@@ -112,9 +112,11 @@ const portfolioSchema = {
 }
 
 export async function parseResumeToPortfolio(
-  resumeText: string
+  resumeText: string,
+  urls: string[] = []
 ): Promise<PortfolioConfig> {
   try {
+    console.log('Parsing resume with Cerebras...')
     const response = await client.chat.completions.create({
       model: 'llama3.3-70b',
       messages: [
@@ -171,7 +173,7 @@ export async function parseResumeToPortfolio(
         },
         {
           role: 'user',
-          content: `Parse this resume and extract the information. Remember: skills MUST be a flat array of strings, not nested objects.\n\nResume:\n${resumeText}`,
+          content: `Parse this resume and extract the information. Remember: skills MUST be a flat array of strings, not nested objects.${urls.length > 0 ? `\n\nURLs found in the document (use these for website, linkedin, github, project links as appropriate):\n${urls.join('\n')}` : ''}\n\nResume:\n${resumeText}`,
         },
       ],
       response_format: {
