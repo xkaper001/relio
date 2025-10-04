@@ -198,7 +198,7 @@ export default function SignIn() {
           </form>
 
           <div className="text-center text-sm">
-            <span className="text-white/60">Don't have an account? </span>
+            <span className="text-white/60">Don&apos;t have an account? </span>
             <Link href="/auth/signup" className="text-purple-400 hover:text-purple-300 font-medium">
               Sign up
             </Link>

@@ -9,7 +9,7 @@ export default function NotFound() {
         <h1 className="text-6xl font-bold text-foreground">404</h1>
         <h2 className="text-3xl font-semibold text-foreground">Portfolio Not Found</h2>
         <p className="text-xl text-muted-foreground max-w-md mx-auto">
-          This portfolio doesn't exist or may have expired. Create your own portfolio today!
+          This portfolio doesn&apos;t exist or may have expired. Create your own portfolio today!
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
           <Link href="/">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import BlurText from './BlurText';
 import ShinyText from './ShinyText';
@@ -16,6 +17,7 @@ interface ProcessingAnimationProps {
 export default function ProcessingAnimation({ aiProcessingTime, portfolioSlug, onComplete }: ProcessingAnimationProps) {
   const [stage, setStage] = useState(1);
   const [isBlurring, setIsBlurring] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     // Stage 1: "Isn't this so cool?!" - show for 3 seconds
@@ -43,6 +45,8 @@ export default function ProcessingAnimation({ aiProcessingTime, portfolioSlug, o
   }, []);
 
   const handleViewPortfolio = () => {
+    // Navigate to the portfolio page
+    router.push(`/${portfolioSlug}`);
     if (onComplete) {
       onComplete();
     }

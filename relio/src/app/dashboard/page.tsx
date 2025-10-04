@@ -2,12 +2,22 @@
 
 import { useEffect, useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Upload, ExternalLink, Edit, Loader2, LogOut, Plus, Trash2 } from 'lucide-react'
+import { ExternalLink, Edit, Loader2, LogOut, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { FileUpload } from '@/components/ui/file-upload'
 import ProcessingAnimation from '@/components/ProcessingAnimation'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/animate-ui/components/radix/alert-dialog'
 import type { PortfolioConfig } from '@/types'
 
 interface Portfolio {
@@ -23,7 +33,6 @@ interface Portfolio {
 
 export default function Dashboard() {
   const { data: session, status } = useSession()
-  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [processing, setProcessing] = useState(false)
@@ -124,15 +133,16 @@ export default function Dashboard() {
   }
 
   const handleDeletePortfolio = async (slug: string) => {
-    if (!confirm('Are you sure you want to delete this portfolio?')) return
-
     try {
       const response = await fetch(`/api/portfolio?slug=${slug}`, {
         method: 'DELETE',
       })
 
       if (response.ok) {
-        await fetchDashboardData()
+        // Immediately update the UI by removing the deleted portfolio
+        setPortfolios(prevPortfolios => 
+          prevPortfolios.filter(portfolio => portfolio.slug !== slug)
+        )
       } else {
         setError('Failed to delete portfolio')
       }
@@ -180,26 +190,30 @@ export default function Dashboard() {
         />
       )}
 
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-foreground">
-              Relio
-            </Link>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-muted-foreground">
-                {session?.user?.email}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => signOut({ callbackUrl: '/' })}
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </Button>
-            </div>
+      {/* Header - Sticky with glassmorph design like landing page */}
+      <header className="sticky top-8 z-10 w-full h-[60px] flex items-center justify-center ">
+        <div className="w-[90%] md:w-[60%] h-[60px] rounded-[50px] px-6 flex items-center justify-between bg-white/5 backdrop-blur-md border border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.1)]"
+          style={{
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)'
+          }}
+        >
+          <Link href="/" className="flex items-center">
+            <h2 className="text-white text-xl font-bold tracking-tight">Relio</h2>
+          </Link>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-white/80 hidden sm:block">
+              {session?.user?.email}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => signOut({ callbackUrl: '/' })}
+              className="border-white/20 bg-white/5 hover:bg-white/10 text-white"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
           </div>
         </div>
       </header>
@@ -215,35 +229,38 @@ export default function Dashboard() {
             </p>
           </div>
 
-          {/* Upload Section */}
-          {portfolios.length === 0 && (
-            <div className="bg-card rounded-lg border border-border p-8">
-              <h2 className="text-2xl font-semibold text-foreground mb-4">
-                Create Your Portfolio
-              </h2>
-              <p className="text-muted-foreground mb-6">
-                Upload your resume to generate your first portfolio
-              </p>
+          {/* Upload Section - Always visible at the top */}
+          <div className="bg-card rounded-lg border border-border p-8">
+            <h2 className="text-2xl font-semibold text-foreground mb-4">
+              {portfolios.length === 0 ? 'Create Your Portfolio' : 'Create Another Portfolio'}
+            </h2>
+            <p className="text-muted-foreground mb-6">
+              {portfolios.length === 0 
+                ? 'Upload your resume to generate your first portfolio'
+                : 'Upload a different resume or use different information to create a new portfolio'
+              }
+            </p>
 
-              {error && (
-                <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded-md text-sm mb-4">
-                  {error}
+            {error && (
+              <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded-md text-sm mb-4">
+                {error}
+              </div>
+            )}
+
+            <FileUpload onChange={handleFileChange} />
+
+            {uploading && (
+              <div className="text-center py-8 mt-4">
+                <div className="inline-block">
+                  <Loader2 className="w-12 h-12 animate-spin text-primary" />
                 </div>
-              )}
-
-              <FileUpload onChange={handleFileChange} />
-
-              {uploading && (
-                <div className="text-center py-8 mt-4">
-                  <div className="inline-block">
-                    <Loader2 className="w-12 h-12 animate-spin text-primary" />
-                  </div>
-                  <p className="mt-4 text-muted-foreground">
-                    Processing your resume with AI...
-                  </p>
-                </div>
-              )}
-
+                <p className="mt-4 text-muted-foreground">
+                  Uploading your resume...
+                </p>
+              </div>
+            )}
+            
+            {portfolios.length === 0 && (
               <div className="mt-6 bg-blue-900/20 border border-blue-800 rounded-lg p-4">
                 <h3 className="font-semibold text-blue-100 mb-2 text-sm">
                   📄 Supported Formats
@@ -253,8 +270,8 @@ export default function Dashboard() {
                   <li>✓ Word documents (.docx)</li>
                 </ul>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Portfolio Management */}
           {portfolios.length > 0 && (
@@ -263,17 +280,7 @@ export default function Dashboard() {
                 <h2 className="text-2xl font-semibold text-foreground">
                   Your Portfolios ({portfolios.length})
                 </h2>
-                <Button onClick={() => document.getElementById('add-resume')?.click()}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create New Portfolio
-                </Button>
               </div>
-
-              {error && (
-                <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded-md text-sm">
-                  {error}
-                </div>
-              )}
 
               {/* Portfolio Cards */}
               <div className="grid gap-6">
@@ -308,13 +315,30 @@ export default function Dashboard() {
                           </Button>
                         </Link>
                         {!portfolio.isDefault && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDeletePortfolio(portfolio.slug)}
-                          >
-                            <Trash2 className="w-4 h-4 text-destructive" />
-                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                              >
+                                <Trash2 className="w-4 h-4 text-destructive" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Portfolio?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete &ldquo;{portfolio.title}&rdquo;? This action cannot be undone and will permanently remove your portfolio.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeletePortfolio(portfolio.slug)}>
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         )}
                       </div>
                     </div>
@@ -413,29 +437,6 @@ export default function Dashboard() {
                     </div>
                   </div>
                 ))}
-              </div>
-
-              {/* Add New Portfolio */}
-              <div className="bg-card rounded-lg border border-dashed border-border p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4">
-                  Create Another Portfolio
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Upload a different resume or use different information to create a new portfolio
-                </p>
-
-                <FileUpload onChange={handleFileChange} />
-
-                {uploading && (
-                  <div className="text-center py-8 mt-4">
-                    <div className="inline-block">
-                      <Loader2 className="w-12 h-12 animate-spin text-primary" />
-                    </div>
-                    <p className="mt-4 text-muted-foreground">
-                      Creating your new portfolio with AI...
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
           )}

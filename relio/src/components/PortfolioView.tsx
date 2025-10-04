@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter, usePathname } from 'next/navigation'
+import { signIn, useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { 
   Mail, 
@@ -17,7 +19,8 @@ import {
   Briefcase,
   GraduationCap,
   Code,
-  User
+  User,
+  Loader2
 } from 'lucide-react'
 import type { PortfolioConfig } from '@/types'
 
@@ -49,6 +52,10 @@ export default function PortfolioView({
   avatar
 }: PortfolioViewProps) {
   const [timeLeft, setTimeLeft] = useState<string>('')
+  const [saving, setSaving] = useState(false)
+  const router = useRouter()
+  const pathname = usePathname()
+  const { data: session } = useSession()
 
   useEffect(() => {
     if (isTemporary && expiresAt) {
@@ -73,6 +80,42 @@ export default function PortfolioView({
     }
   }, [isTemporary, expiresAt])
 
+  const handleSavePortfolio = async () => {
+    // If user is not authenticated, redirect to signup with callbackUrl
+    if (!session) {
+      const currentPath = pathname || '/'
+      await signIn(undefined, { callbackUrl: currentPath })
+      return
+    }
+
+    // If user is authenticated, claim the portfolio
+    setSaving(true)
+    try {
+      const slug = pathname?.split('/').pop()
+      const response = await fetch('/api/claim-portfolio', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ slug }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        // Portfolio claimed successfully, redirect to dashboard
+        router.push('/dashboard')
+      } else {
+        alert(data.error || 'Failed to save portfolio')
+        setSaving(false)
+      }
+    } catch (error) {
+      console.error('Error saving portfolio:', error)
+      alert('An error occurred while saving the portfolio')
+      setSaving(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Temporary Portfolio Banner */}
@@ -86,9 +129,20 @@ export default function PortfolioView({
                   ⚠️ This portfolio will be deleted in {timeLeft}. Sign up to save permanently.
                 </p>
               </div>
-              <Link href="/auth/signup">
-                <Button size="sm">Save My Portfolio</Button>
-              </Link>
+              <Button 
+                size="sm" 
+                onClick={handleSavePortfolio}
+                disabled={saving}
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save My Portfolio'
+                )}
+              </Button>
             </div>
           </div>
         </div>

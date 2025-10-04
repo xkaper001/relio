@@ -4,6 +4,10 @@ import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter, usePathname } from 'next/navigation'
+import { signIn, useSession } from 'next-auth/react'
+import { Button } from '@/components/ui/button'
+import { AlertCircle, Loader2 } from 'lucide-react'
 import type { PortfolioConfig } from '@/types'
 import * as THREE from 'three'
 
@@ -183,6 +187,70 @@ export default function PortfolioViewAnimated({
 }: PortfolioViewAnimatedProps) {
   const [scrollY, setScrollY] = useState(0)
   const [activeSection, setActiveSection] = useState('hero')
+  const [timeLeft, setTimeLeft] = useState<string>('')
+  const [saving, setSaving] = useState(false)
+  const router = useRouter()
+  const pathname = usePathname()
+  const { data: session } = useSession()
+
+  useEffect(() => {
+    if (isTemporary && expiresAt) {
+      const updateTimer = () => {
+        const now = new Date().getTime()
+        const expiry = new Date(expiresAt).getTime()
+        const distance = expiry - now
+
+        if (distance < 0) {
+          setTimeLeft('Expired')
+          return
+        }
+
+        const hours = Math.floor(distance / (1000 * 60 * 60))
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
+        setTimeLeft(`${hours}h ${minutes}m remaining`)
+      }
+
+      updateTimer()
+      const interval = setInterval(updateTimer, 60000)
+      return () => clearInterval(interval)
+    }
+  }, [isTemporary, expiresAt])
+
+  const handleSavePortfolio = async () => {
+    // If user is not authenticated, redirect to signup with callbackUrl
+    if (!session) {
+      const currentPath = pathname || '/'
+      await signIn(undefined, { callbackUrl: currentPath })
+      return
+    }
+
+    // If user is authenticated, claim the portfolio
+    setSaving(true)
+    try {
+      const slug = pathname?.split('/').pop()
+      const response = await fetch('/api/claim-portfolio', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ slug }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        // Portfolio claimed successfully, redirect to dashboard
+        router.push('/dashboard')
+      } else {
+        alert(data.error || 'Failed to save portfolio')
+        setSaving(false)
+      }
+    } catch (error) {
+      console.error('Error saving portfolio:', error)
+      alert('An error occurred while saving the portfolio')
+      setSaving(false)
+    }
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -219,12 +287,42 @@ export default function PortfolioViewAnimated({
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <AuroraBackground />
       
+      {/* Temporary Portfolio Banner */}
+      {isTemporary && (
+        <div className="fixed top-0 left-0 right-0 z-[60] bg-primary/10 border-b border-primary/20 py-3">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-5 h-5 text-primary" />
+                <p className="text-sm font-medium text-foreground">
+                  ⚠️ This portfolio will be deleted in {timeLeft}. Sign up to save permanently.
+                </p>
+              </div>
+              <Button 
+                size="sm" 
+                onClick={handleSavePortfolio}
+                disabled={saving}
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save My Portfolio'
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Fixed Navigation */}
       <motion.nav
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.5 }}
-        className={`fixed top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 ${
+        className={`fixed ${isTemporary ? 'top-[52px]' : 'top-0'} z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 ${
           scrollY > 50 ? 'shadow-md' : ''
         }`}
       >

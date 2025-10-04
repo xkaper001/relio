@@ -1,15 +1,33 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ArrowLeft, Save, Loader2, Plus, Trash2, Eye, EyeOff } from 'lucide-react'
+import { ArrowLeft, Save, Loader2, Plus, Trash2, Eye, EyeOff, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import ImageUpload from '@/components/ImageUpload'
 import PortfolioView from '@/components/PortfolioView'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+  useCollapsible,
+} from '@/components/animate-ui/primitives/radix/collapsible'
 import type { PortfolioConfig, Experience, Education, Project } from '@/types'
+
+// Chevron icon component that rotates based on collapsible state
+const ChevronIcon = () => {
+  const { isOpen } = useCollapsible();
+  return (
+    <ChevronDown 
+      className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${
+        isOpen ? 'rotate-180' : ''
+      }`} 
+    />
+  );
+};
 
 // Helper function to ensure URLs have proper protocol
 const ensureHttps = (url: string): string => {
@@ -21,7 +39,7 @@ const ensureHttps = (url: string): string => {
   return `https://${trimmedUrl}`
 }
 
-export default function EditPortfolio() {
+function EditPortfolioContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -330,18 +348,26 @@ export default function EditPortfolio() {
           )}
 
           {/* Portfolio Title */}
-          <div className="bg-card rounded-lg border border-border p-6">
-            <h2 className="text-xl font-semibold text-foreground mb-4">Portfolio Title</h2>
-            <Input
-              value={portfolioTitle}
-              onChange={(e) => setPortfolioTitle(e.target.value)}
-              placeholder="My Portfolio"
-              className="mb-2"
-            />
-            <p className="text-xs text-muted-foreground">
-              This helps you identify this portfolio in your dashboard
-            </p>
-          </div>
+          <Collapsible defaultOpen={true}>
+            <div className="bg-card rounded-lg border border-border">
+              <CollapsibleTrigger className="w-full p-6 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                <h2 className="text-xl font-semibold text-foreground">Portfolio Title</h2>
+                <ChevronIcon />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="px-6 pb-6 space-y-2">
+                  <Input
+                    value={portfolioTitle}
+                    onChange={(e) => setPortfolioTitle(e.target.value)}
+                    placeholder="My Portfolio"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    This helps you identify this portfolio in your dashboard
+                  </p>
+                </div>
+              </CollapsibleContent>
+            </div>
+          </Collapsible>
 
           {success && (
             <div className="bg-green-500/10 border border-green-500 text-green-500 px-4 py-3 rounded-md text-sm">
@@ -350,27 +376,41 @@ export default function EditPortfolio() {
           )}
 
           {/* Profile Image */}
-          <div className="bg-card rounded-lg border border-border p-8">
-            <h2 className="text-2xl font-semibold text-foreground mb-6">Profile Picture</h2>
-            <ImageUpload
-              currentImage={userImage}
-              onImageUploaded={(url) => {
-                setUserImage(url)
-                setSuccess('Profile image updated successfully!')
-                setTimeout(() => setSuccess(''), 3000)
-              }}
-              onImageRemoved={() => {
-                setUserImage(null)
-                setSuccess('Profile image removed successfully!')
-                setTimeout(() => setSuccess(''), 3000)
-              }}
-            />
-          </div>
+          <Collapsible defaultOpen={false}>
+            <div className="bg-card rounded-lg border border-border">
+              <CollapsibleTrigger className="w-full p-6 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                <h2 className="text-xl font-semibold text-foreground">Profile Picture</h2>
+                <ChevronIcon />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="px-6 pb-6">
+                  <ImageUpload
+                    currentImage={userImage}
+                    onImageUploaded={(url) => {
+                      setUserImage(url)
+                      setSuccess('Profile image updated successfully!')
+                      setTimeout(() => setSuccess(''), 3000)
+                    }}
+                    onImageRemoved={() => {
+                      setUserImage(null)
+                      setSuccess('Profile image removed successfully!')
+                      setTimeout(() => setSuccess(''), 3000)
+                    }}
+                  />
+                </div>
+              </CollapsibleContent>
+            </div>
+          </Collapsible>
 
           {/* Basic Info */}
-          <div className="bg-card rounded-lg border border-border p-8">
-            <h2 className="text-2xl font-semibold text-foreground mb-6">Basic Information</h2>
-            <div className="space-y-4">
+          <Collapsible defaultOpen={true}>
+            <div className="bg-card rounded-lg border border-border">
+              <CollapsibleTrigger className="w-full p-6 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                <h2 className="text-xl font-semibold text-foreground">Basic Information</h2>
+                <ChevronIcon />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="px-6 pb-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Name</label>
                 <Input
@@ -396,13 +436,20 @@ export default function EditPortfolio() {
                   placeholder="Tell us about yourself"
                 />
               </div>
+                </div>
+              </CollapsibleContent>
             </div>
-          </div>
+          </Collapsible>
 
           {/* Contact Info */}
-          <div className="bg-card rounded-lg border border-border p-8">
-            <h2 className="text-2xl font-semibold text-foreground mb-6">Contact Information</h2>
-            <div className="grid md:grid-cols-2 gap-4">
+          <Collapsible defaultOpen={false}>
+            <div className="bg-card rounded-lg border border-border">
+              <CollapsibleTrigger className="w-full p-6 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                <h2 className="text-xl font-semibold text-foreground">Contact Information</h2>
+                <ChevronIcon />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="px-6 pb-6 grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Email</label>
                 <Input
@@ -452,13 +499,20 @@ export default function EditPortfolio() {
                   placeholder="https://yourwebsite.com"
                 />
               </div>
+                </div>
+              </CollapsibleContent>
             </div>
-          </div>
+          </Collapsible>
 
           {/* Skills */}
-          <div className="bg-card rounded-lg border border-border p-8">
-            <h2 className="text-2xl font-semibold text-foreground mb-6">Skills</h2>
-            <div>
+          <Collapsible defaultOpen={false}>
+            <div className="bg-card rounded-lg border border-border">
+              <CollapsibleTrigger className="w-full p-6 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                <h2 className="text-xl font-semibold text-foreground">Skills</h2>
+                <ChevronIcon />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="px-6 pb-6">
               <label className="block text-sm font-medium text-foreground mb-2">
                 Skills (comma-separated)
               </label>
@@ -467,19 +521,26 @@ export default function EditPortfolio() {
                 onChange={(e) => updateArrayField('skills', e.target.value)}
                 placeholder="React, TypeScript, Node.js, etc."
               />
+                </div>
+              </CollapsibleContent>
             </div>
-          </div>
+          </Collapsible>
 
           {/* Experience */}
-          <div className="bg-card rounded-lg border border-border p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold text-foreground">Experience</h2>
-              <Button onClick={addExperience} size="sm">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Experience
-              </Button>
-            </div>
-            <div className="space-y-6">
+          <Collapsible defaultOpen={false}>
+            <div className="bg-card rounded-lg border border-border">
+              <div className="p-6 flex items-center justify-between">
+                <CollapsibleTrigger className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                  <h2 className="text-xl font-semibold text-foreground">Experience</h2>
+                  <ChevronIcon />
+                </CollapsibleTrigger>
+                <Button onClick={addExperience} size="sm">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Experience
+                </Button>
+              </div>
+              <CollapsibleContent>
+                <div className="px-6 pb-6 space-y-6">
               {portfolio.experience.map((exp, index) => (
                 <div key={index} className="border border-border rounded-lg p-6 relative">
                   <Button
@@ -547,19 +608,26 @@ export default function EditPortfolio() {
                   </div>
                 </div>
               ))}
+                </div>
+              </CollapsibleContent>
             </div>
-          </div>
+          </Collapsible>
 
           {/* Education */}
-          <div className="bg-card rounded-lg border border-border p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold text-foreground">Education</h2>
-              <Button onClick={addEducation} size="sm">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Education
-              </Button>
-            </div>
-            <div className="space-y-6">
+          <Collapsible defaultOpen={false}>
+            <div className="bg-card rounded-lg border border-border">
+              <div className="p-6 flex items-center justify-between">
+                <CollapsibleTrigger className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                  <h2 className="text-xl font-semibold text-foreground">Education</h2>
+                  <ChevronIcon />
+                </CollapsibleTrigger>
+                <Button onClick={addEducation} size="sm">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Education
+                </Button>
+              </div>
+              <CollapsibleContent>
+                <div className="px-6 pb-6 space-y-6">
               {portfolio.education.map((edu, index) => (
                 <div key={index} className="border border-border rounded-lg p-6 relative">
                   <Button
@@ -624,19 +692,26 @@ export default function EditPortfolio() {
                   </div>
                 </div>
               ))}
+                </div>
+              </CollapsibleContent>
             </div>
-          </div>
+          </Collapsible>
 
           {/* Projects */}
-          <div className="bg-card rounded-lg border border-border p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold text-foreground">Projects</h2>
-              <Button onClick={addProject} size="sm">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Project
-              </Button>
-            </div>
-            <div className="space-y-6">
+          <Collapsible defaultOpen={false}>
+            <div className="bg-card rounded-lg border border-border">
+              <div className="p-6 flex items-center justify-between">
+                <CollapsibleTrigger className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                  <h2 className="text-xl font-semibold text-foreground">Projects</h2>
+                  <ChevronIcon />
+                </CollapsibleTrigger>
+                <Button onClick={addProject} size="sm">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Project
+                </Button>
+              </div>
+              <CollapsibleContent>
+                <div className="px-6 pb-6 space-y-6">
               {portfolio.projects.map((proj, index) => (
                 <div key={index} className="border border-border rounded-lg p-6 relative">
                   <Button
@@ -699,8 +774,10 @@ export default function EditPortfolio() {
                   </div>
                 </div>
               ))}
+                </div>
+              </CollapsibleContent>
             </div>
-          </div>
+          </Collapsible>
 
           {/* Save Button at Bottom */}
           <div className="flex justify-end gap-4 pt-6 sticky bottom-0 bg-background pb-4">
@@ -745,5 +822,17 @@ export default function EditPortfolio() {
       </div>
       </div>
     </div>
+  )
+}
+
+export default function EditPortfolio() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    }>
+      <EditPortfolioContent />
+    </Suspense>
   )
 }
