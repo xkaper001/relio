@@ -112,9 +112,11 @@ const portfolioSchema = {
 }
 
 export async function parseResumeToPortfolio(
-  resumeText: string
+  resumeText: string,
+  urls: string[] = []
 ): Promise<PortfolioConfig> {
   try {
+    console.log('Parsing resume with Cerebras...')
     const response = await client.chat.completions.create({
       model: 'llama3.3-70b',
       messages: [
@@ -167,11 +169,20 @@ export async function parseResumeToPortfolio(
           - Extract ALL programming languages, frameworks, tools, and technologies into the skills array
           - Format dates as "MMM YYYY" (e.g., "Jan 2020") or just year
           - If a field is missing, omit it (except required fields)
-          - For 'about', create a compelling 2-3 sentence summary if not in resume`,
+          - For 'about', create a compelling 2-3 sentence summary if not in resume
+          
+          PROJECT LINKS RULES:
+          - For projects, use the "name" field for the actual project name ONLY
+          - Do NOT put URLs in the "name" field
+          - Use the "link" field for live demo/deployment URLs (e.g., https://myapp.com)
+          - Use the "github" field for GitHub repository URLs
+          - If there is no live link or deployment URL for a project, leave "link" field empty/omitted
+          - Do NOT duplicate the same URL in both "name" and "link" fields
+          - Do NOT use GitHub URLs in the "link" field - those belong in the "github" field`,
         },
         {
           role: 'user',
-          content: `Parse this resume and extract the information. Remember: skills MUST be a flat array of strings, not nested objects.\n\nResume:\n${resumeText}`,
+          content: `Parse this resume and extract the information. Remember: skills MUST be a flat array of strings, not nested objects.${urls.length > 0 ? `\n\nURLs found in the document (use these for website, linkedin, github, project links as appropriate):\n${urls.join('\n')}` : ''}\n\nResume:\n${resumeText}`,
         },
       ],
       response_format: {

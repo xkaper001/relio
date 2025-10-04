@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { parseResumeToPortfolio, selectAvatarForUser } from '@/lib/ai'
 import { generateTempUsername, generateUniqueSlug } from '@/lib/utils'
-import pdfParse from 'pdf-parse';
+import { getDocumentProxy, extractText, extractLinks } from 'unpdf'
 import mammoth from 'mammoth'
 
 // Helper function to generate a globally unique slug
@@ -42,25 +42,38 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    // Extract text from file
+    // Extract text and URLs from file
     let resumeText = ''
-    const buffer = Buffer.from(await file.arrayBuffer())
+    let urls: string[] = []
+    const arrayBuffer = await file.arrayBuffer()
+    const uint8Array = new Uint8Array(arrayBuffer)
 
     if (file.type === 'application/pdf') {
-      console.log('📄 Extracting text from PDF file:', file.name)
-      const data = await pdfParse(buffer)
-      resumeText = data.text
-      console.log(`✅ PDF text extracted: ${resumeText.length} characters, ${data.numpages} pages`)
-      console.log('📝 Preview:', resumeText)
+      console.log('📄 Extracting text and URLs from PDF file:', file.name)
+      
+      // Get PDF document proxy first (prevents worker issues in Node.js)
+      const pdf = await getDocumentProxy(uint8Array)
+      
+      // Extract text using unpdf
+      const { text, totalPages } = await extractText(pdf, { mergePages: true })
+      resumeText = text
+      
+      // Extract URLs from PDF
+      const { links } = await extractLinks(pdf)
+      urls = links.filter(url => url && url.startsWith('http'))
+      
+      console.log(`✅ PDF text extracted: ${resumeText.length} characters, ${totalPages} pages`)
+      console.log(`🔗 URLs found: ${urls.length}`, urls)
     } else if (
       file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
       file.name.endsWith('.docx')
     ) {
       console.log('📄 Extracting text from DOCX file:', file.name)
+      // mammoth needs Buffer, so convert back
+      const buffer = Buffer.from(uint8Array)
       const result = await mammoth.extractRawText({ buffer })
       resumeText = result.value
       console.log(`✅ DOCX text extracted: ${resumeText.length} characters`)
-      console.log('📝 Preview:', resumeText)
     } else {
       return NextResponse.json(
         { error: 'Unsupported file type. Please upload PDF or DOCX.' },
@@ -76,8 +89,8 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Parse resume with AI
-    const portfolioConfig = await parseResumeToPortfolio(resumeText)
+    // Parse resume with AI (including URLs found in the document)
+    const portfolioConfig = await parseResumeToPortfolio(resumeText, urls)
     
     // Select intelligent avatar based on resume content
     const selectedAvatar = await selectAvatarForUser(portfolioConfig)

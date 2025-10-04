@@ -761,6 +761,9 @@ function EditPortfolioContent() {
                           onChange={(e) => updateProject(index, 'link', e.target.value)}
                           placeholder="https://project-url.com"
                         />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Live demo or deployment URL only. Leave empty if no live link exists.
+                        </p>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-foreground mb-2">GitHub Link (Optional)</label>
@@ -769,6 +772,9 @@ function EditPortfolioContent() {
                           onChange={(e) => updateProject(index, 'github', e.target.value)}
                           placeholder="https://github.com/username/repo"
                         />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          GitHub repository URL
+                        </p>
                       </div>
                     </div>
                   </div>
