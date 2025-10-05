@@ -43,10 +43,14 @@ export default function Dashboard() {
   const [portfolioSlug, setPortfolioSlug] = useState<string>('')
 
   useEffect(() => {
+    console.log('Dashboard auth status:', status, 'session:', !!session)
     if (status === 'authenticated') {
       fetchDashboardData()
+    } else if (status === 'unauthenticated') {
+      // Redirect to signin if not authenticated
+      window.location.href = '/auth/signin'
     }
-  }, [status])
+  }, [status, session])
 
   const fetchDashboardData = async () => {
     try {

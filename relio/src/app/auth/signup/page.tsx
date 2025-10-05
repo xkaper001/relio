@@ -77,17 +77,22 @@ export default function SignUp() {
         email,
         password,
         redirect: false,
+        callbackUrl: '/dashboard',
       })
+
+      console.log('Auto sign in result:', result)
 
       if (result?.error) {
         setError('Account created but sign in failed. Redirecting to sign in page...')
-        setTimeout(() => router.push('/auth/signin'), 2000)
-      } else if (result?.ok) {
-        // Wait a moment for session to update, then redirect
         setTimeout(() => {
-          router.push('/dashboard')
-          router.refresh()
-        }, 100)
+          window.location.href = '/auth/signin'
+        }, 2000)
+      } else if (result?.ok) {
+        // Successfully signed in, redirect to dashboard
+        window.location.href = '/dashboard'
+      } else {
+        setError('An unexpected error occurred. Please try signing in manually.')
+        setLoading(false)
       }
     } catch (err) {
       setError('An error occurred. Please try again.')
