@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, memo } from 'react';
 import * as THREE from 'three';
 import { EffectComposer, EffectPass, RenderPass, Effect } from 'postprocessing';
 
@@ -353,6 +353,8 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const visibilityRef = useRef({ visible: true });
   const speedRef = useRef(speed);
+  const lastTimeRef = useRef(0);
+  const pausedTimeRef = useRef(0);
 
   const threeRef = useRef<{
     renderer: THREE.WebGLRenderer;
@@ -379,6 +381,7 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
       uEdgeFade: { value: number };
     };
     resizeObserver?: ResizeObserver;
+    intersectionObserver?: IntersectionObserver;
     raf?: number;
     quad?: THREE.Mesh<THREE.PlaneGeometry, THREE.ShaderMaterial>;
     timeOffset?: number;
@@ -387,6 +390,41 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
     liquidEffect?: Effect;
   } | null>(null);
   const prevConfigRef = useRef<any>(null);
+  
+  // IntersectionObserver for visibility tracking
+  useEffect(() => {
+    if (!autoPauseOffscreen || !containerRef.current) return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const wasVisible = visibilityRef.current.visible;
+          visibilityRef.current.visible = entry.isIntersecting;
+          
+          // Smooth transition when becoming visible again
+          if (!wasVisible && entry.isIntersecting && threeRef.current) {
+            // Reset clock to prevent jumps
+            const currentTime = threeRef.current.uniforms.uTime.value;
+            pausedTimeRef.current = currentTime;
+          }
+        });
+      },
+      {
+        threshold: 0.1, // Trigger when at least 10% is visible
+        rootMargin: '50px' // Start animating slightly before it enters viewport
+      }
+    );
+    
+    observer.observe(containerRef.current);
+    
+    if (threeRef.current) {
+      threeRef.current.intersectionObserver = observer;
+    }
+    
+    return () => {
+      observer.disconnect();
+    };
+  }, [autoPauseOffscreen]);
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -415,13 +453,19 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
         threeRef.current = null;
       }
       const canvas = document.createElement('canvas');
-      const gl = canvas.getContext('webgl2', { antialias, alpha: true });
+      const gl = canvas.getContext('webgl2', { 
+        antialias, 
+        alpha: true,
+        powerPreference: 'high-performance',
+        desynchronized: true
+      });
       if (!gl) return;
       const renderer = new THREE.WebGLRenderer({
         canvas,
         context: gl as WebGL2RenderingContext,
         antialias,
-        alpha: true
+        alpha: true,
+        powerPreference: 'high-performance'
       });
       renderer.domElement.style.width = '100%';
       renderer.domElement.style.height = '100%';
@@ -554,10 +598,16 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
       let raf = 0;
       const animate = () => {
         if (autoPauseOffscreen && !visibilityRef.current.visible) {
+          // Store the current time when pausing
+          lastTimeRef.current = uniforms.uTime.value;
           raf = requestAnimationFrame(animate);
           return;
         }
-        uniforms.uTime.value = timeOffset + clock.getElapsedTime() * speedRef.current;
+        
+        // Smooth continuation of animation when resuming
+        const elapsedTime = clock.getElapsedTime() * speedRef.current;
+        uniforms.uTime.value = timeOffset + elapsedTime;
+        
         if (liquidEffect) (liquidEffect as any).uniforms.get('uTime').value = uniforms.uTime.value;
         if (composer) {
           if (touch) touch.update();
@@ -619,6 +669,7 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
       if (!threeRef.current) return;
       const t = threeRef.current;
       t.resizeObserver?.disconnect();
+      t.intersectionObserver?.disconnect();
       cancelAnimationFrame(t.raf!);
       t.quad?.geometry.dispose();
       t.material.dispose();
@@ -660,4 +711,4 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
   );
 };
 
-export default PixelBlast;
+export default memo(PixelBlast);

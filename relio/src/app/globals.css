@@ -121,15 +121,34 @@
     @apply bg-background text-foreground;
   }
 
-  button, a, [role="button"] {
+  button,
+  a,
+  [role="button"] {
     cursor: pointer;
   }
+
+  /* Performance optimizations */
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* GPU acceleration - only for actively animating elements */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-animating="true"] {
+      will-change: transform, opacity;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+    }
+  }
 }
+
 /* Shine animation for ShinyText component */
 @keyframes shine {
   0% {
     background-position: 100%;
   }
+
   100% {
     background-position: -100%;
   }

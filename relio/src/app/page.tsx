@@ -2,34 +2,51 @@
 
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
-import { ArrowRight, Sparkles, FileText, Wand2, Globe, CheckCircle, Github } from 'lucide-react'
+import { ArrowRight, Sparkles, FileText, Wand2, Globe, Github } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import PixelBlast from '@/components/PixelBlast'
+import dynamic from 'next/dynamic'
+import { Suspense } from 'react'
+
+const PixelBlast = dynamic(() => import('@/components/PixelBlast'), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-black" />
+})
+
+const HandWrittenTitle = dynamic(() => 
+  import('@/components/ui/hand-writing-text').then(mod => ({ default: mod.HandWrittenTitle })),
+  { ssr: false }
+)
+
+const Features = dynamic(() => 
+  import('@/components/ui/features-8').then(mod => ({ default: mod.Features })),
+  { ssr: false }
+)
 
 export default function Home() {
-  const { data: session } = useSession()
+  const { status } = useSession()
 
   return (
     <div className="min-h-screen bg-black">
       {/* Hero Section */}
-      <div className="relative w-full overflow-hidden bg-black" style={{ minHeight: '100vh', height: '100vh' }}>
+      <div className="relative w-full overflow-hidden bg-black" style={{ minHeight: '100vh', height: '100vh', contain: 'layout style paint' }}>
         {/* PixelBlast Background */}
-        <div className="absolute inset-0 w-full h-full">
-          <PixelBlast
-            variant="circle"
-            pixelSize={6}
-            color="#B19EEF"
-            patternScale={3}
-            patternDensity={1.2}
-            enableRipples
-            rippleSpeed={0.4}
-            // liquid={true}
-            // liquidStrength={0.15}
-            edgeFade={0.3}
-            speed={0.5}
-            className="w-full h-full"
-            style={{ width: '100%', height: '100%' }}
-          />
+        <div className="absolute inset-0 w-full h-full" style={{ isolation: 'isolate' }}>
+          <Suspense fallback={<div className="w-full h-full bg-black" />}>
+            <PixelBlast
+              variant="circle"
+              pixelSize={6}
+              color="#B19EEF"
+              patternScale={3}
+              patternDensity={1.2}
+              enableRipples
+              rippleSpeed={0.4}
+              edgeFade={0.3}
+              speed={0.5}
+              autoPauseOffscreen={true}
+              className="w-full h-full"
+              style={{ width: '100%', height: '100%' }}
+            />
+          </Suspense>
         </div>
 
         {/* Header */}
@@ -44,15 +61,31 @@ export default function Home() {
               <h2 className="text-white text-xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-array)' }}>RELIO</h2>
             </Link>
 
-            <a 
-              href="https://github.com/xkaper001/relio" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-white hover:text-white/80 transition-colors cursor-pointer"
-            >
-              <Github className="w-5 h-5" />
-              <span className="hidden sm:inline text-sm font-medium">GitHub</span>
-            </a>
+            <div className="flex items-center gap-3">
+              <a 
+                href="https://www.producthunt.com/products/relio-2?launch=relio-2" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-white hover:text-white/80 transition-colors cursor-pointer"
+                aria-label="Product Hunt"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20 0C8.95 0 0 8.95 0 20C0 31.05 8.95 40 20 40C31.05 40 40 31.05 40 20C40 8.95 31.05 0 20 0ZM23 23H17V28H13V12H23C25.7614 12 28 14.2386 28 17C28 19.7614 25.7614 22 23 22V23ZM23 18C23.5523 18 24 17.5523 24 17C24 16.4477 23.5523 16 23 16H17V18H23Z" fill="currentColor"/>
+                </svg>
+                <span className="hidden sm:inline text-sm font-medium">Product Hunt</span>
+              </a>
+
+              <a 
+                href="https://github.com/xkaper001/relio" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-white hover:text-white/80 transition-colors cursor-pointer"
+                aria-label="GitHub"
+              >
+                <Github className="w-5 h-5" />
+                <span className="hidden sm:inline text-sm font-medium">GitHub</span>
+              </a>
+            </div>
           </div>
         </div>
 
@@ -80,15 +113,15 @@ export default function Home() {
 
             {/* CTA Buttons */}
             <div className="flex gap-4 items-center mt-8">
-              <Link href={session ? '/dashboard' : '/auth/signin'} className="cursor-pointer">
+              <Link href={status === 'authenticated' ? '/dashboard' : '/auth/signin'} className="cursor-pointer">
                 <Button variant="default" size="lg" className="cursor-pointer">
-                  {session ? 'Go to Dashboard' : 'Get Started Free'}
+                  {status === 'authenticated' ? 'Go to Dashboard' : 'Get Started Free'}
                 </Button>
               </Link>
               
-              <Link href={session ? '/dashboard' : '/try'} className="cursor-pointer">
+              <Link href={status === 'authenticated' ? '/dashboard' : '/try'} className="cursor-pointer">
                 <Button variant="outline" size="lg" className="cursor-pointer">
-                  {session ? 'Upload Resume' : 'Try Without Signup'}
+                  {status === 'authenticated' ? 'Upload Resume' : 'Try Without Signup'}
                 </Button>
               </Link>
             </div>
@@ -146,84 +179,49 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-black">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-              Why Choose Relio?
-            </h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              Everything you need to showcase your professional story
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className="flex gap-4 p-6 rounded-lg bg-gray-900 border border-gray-800 hover:border-purple-500/50 transition-colors"
-              >
-                <div className="flex-shrink-0">
-                  <CheckCircle className="w-6 h-6 text-purple-400" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-white mb-2">
-                    {feature.title}
-                  </h3>
-                  <p className="text-gray-400">{feature.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+      <div className="bg-black">
+        <div className="text-center pt-16 pb-8 px-4">
+          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
+            Why Choose Relio?
+          </h2>
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+            Everything you need to showcase your professional story
+          </p>
         </div>
-      </section>
+        <Suspense fallback={<div className="py-16 bg-black" />}>
+          <Features />
+        </Suspense>
+      </div>
 
       {/* CTA Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-black border-t border-gray-800">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-black border-t border-gray-800">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <h2 className="text-4xl sm:text-5xl font-bold text-white">
             Ready to Stand Out?
           </h2>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Join thousands of professionals who are already using Relio to showcase their work
+            Join professionals who are already using Relio to showcase their work
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href={session ? '/dashboard' : '/auth/signin'} className="cursor-pointer">
+            <Link href={status === 'authenticated' ? '/dashboard' : '/auth/signin'} className="cursor-pointer">
               <Button size="lg" className="text-lg cursor-pointer">
-                {session ? 'Go to Dashboard' : 'Create Your Portfolio'}
+                {status === 'authenticated' ? 'Go to Dashboard' : 'Create Your Portfolio'}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
           </div>
         </div>
       </section>
+
+      {/* Hand Written Section */}
+      <section className="py-8 px-4 sm:px-6 lg:px-8 bg-black">
+        <Suspense fallback={<div className="py-24" />}>
+          <HandWrittenTitle 
+            title="RELIO" 
+            subtitle="Transform Your Career Story"
+          />
+        </Suspense>
+      </section>
     </div>
   )
 }
-
-const features = [
-  {
-    title: 'AI-Powered Parsing',
-    description: 'Advanced AI technology extracts and structures your resume data with precision',
-  },
-  {
-    title: 'Beautiful Templates',
-    description: 'Choose from professionally designed templates that make your work shine',
-  },
-  {
-    title: 'Instant Publishing',
-    description: 'Your portfolio goes live immediately with a custom URL',
-  },
-  {
-    title: 'Easy Editing',
-    description: 'Update and customize your portfolio anytime with our intuitive editor',
-  },
-  {
-    title: 'No Coding Required',
-    description: 'Create a professional portfolio without any technical knowledge',
-  },
-  {
-    title: 'Mobile Responsive',
-    description: 'Your portfolio looks perfect on every device and screen size',
-  },
-]

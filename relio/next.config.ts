@@ -10,6 +10,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  reactStrictMode: true,
+  // Performance optimizations
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  experimental: {
+    optimizePackageImports: ['framer-motion', 'three', 'lucide-react'],
+  },
 };
 
 export default nextConfig;
