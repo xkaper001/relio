@@ -118,6 +118,7 @@ export async function POST(req: NextRequest) {
               title: `${portfolioConfig.name}'s Portfolio`,
               avatar: selectedAvatar,
               isDefault: true,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               config: portfolioConfig as any,
             },
           },
@@ -136,8 +137,13 @@ export async function POST(req: NextRequest) {
       })
     } else {
       // Create/update portfolio for authenticated user
+      const userEmail = session.user?.email
+      if (!userEmail) {
+        return NextResponse.json({ error: 'Email not found in session' }, { status: 400 })
+      }
+      
       const user = await prisma.user.findUnique({
-        where: { email: session.user?.email! },
+        where: { email: userEmail },
       })
 
       if (!user) {
@@ -156,6 +162,7 @@ export async function POST(req: NextRequest) {
           title: `${portfolioConfig.name}'s Portfolio`,
           avatar: selectedAvatar,
           isDefault: false, // Will be set to true if it's the first one
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           config: portfolioConfig as any,
         },
       })

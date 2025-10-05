@@ -37,6 +37,7 @@ export async function PUT(req: NextRequest) {
         id: existingPortfolio.id,
       },
       data: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         config: config as any,
         ...(title && { title }),
         ...(template && { template }),
@@ -135,6 +136,7 @@ export async function POST(req: NextRequest) {
         userId: session.user.id,
         slug,
         title: title || 'My Portfolio',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         config: config as any,
         isDefault: portfolioCount === 0,
       },

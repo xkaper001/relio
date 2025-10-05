@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
       ).end(buffer)
     })
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const uploadResult = result as any
 
     // Update user profile in database
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
 }
 
 // DELETE endpoint to remove profile image
-export async function DELETE(request: NextRequest) {
+export async function DELETE() {
   try {
     const session = await getServerSession(authOptions)
     

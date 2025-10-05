@@ -1,9 +1,8 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import Image from 'next/image'
-import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { signIn, useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
@@ -548,6 +547,7 @@ export default function PortfolioViewAnimated({
 
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const scrollToSection = (id: string) => {

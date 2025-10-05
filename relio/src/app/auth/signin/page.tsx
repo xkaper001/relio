@@ -12,7 +12,7 @@ import ShinyText from '@/components/ShinyText'
 
 export default function SignIn() {
   const router = useRouter()
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -84,6 +84,7 @@ export default function SignIn() {
     try {
       await signIn(provider, { callbackUrl: '/dashboard' })
     } catch (err) {
+      console.error('OAuth sign in error:', err)
       setError(`Failed to sign in with ${provider}. Please try again.`)
       setOauthLoading(null)
     }

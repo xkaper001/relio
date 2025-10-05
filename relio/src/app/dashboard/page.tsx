@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
-import { ExternalLink, Edit, Loader2, LogOut, Trash2 } from 'lucide-react'
+import { ExternalLink, Edit, LogOut, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { FileUpload } from '@/components/ui/file-upload'
 import ProcessingAnimation from '@/components/ProcessingAnimation'
@@ -124,6 +124,7 @@ export default function Dashboard() {
 
       // Don't refresh immediately, let animation complete
     } catch (err) {
+      console.error('Upload error:', err)
       setError('An error occurred. Please try again.')
       setUploading(false)
       setProcessing(false)
@@ -152,6 +153,7 @@ export default function Dashboard() {
         setError('Failed to delete portfolio')
       }
     } catch (err) {
+      console.error('Delete error:', err)
       setError('An error occurred while deleting')
     }
   }
@@ -172,6 +174,7 @@ export default function Dashboard() {
         setError('Failed to update template')
       }
     } catch (err) {
+      console.error('Template update error:', err)
       setError('An error occurred while updating template')
     }
   }

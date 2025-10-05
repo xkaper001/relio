@@ -6,6 +6,7 @@ import { ArrowRight, Sparkles, FileText, Wand2, Globe, Github } from 'lucide-rea
 import { Button } from '@/components/ui/button'
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
+import { motion } from 'framer-motion'
 
 const PixelBlast = dynamic(() => import('@/components/PixelBlast'), {
   ssr: false,
@@ -24,6 +25,43 @@ const Features = dynamic(() =>
 
 export default function Home() {
   const { status } = useSession()
+
+  // Animation variants
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.6 }
+    }
+  }
+
+  const fadeIn = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { duration: 0.8 }
+    }
+  }
+
+  const scaleIn = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { 
+      opacity: 1, 
+      scale: 1,
+      transition: { duration: 0.5 }
+    }
+  }
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2
+      }
+    }
+  }
 
   return (
     <div className="min-h-screen bg-black">
@@ -132,85 +170,142 @@ export default function Home() {
       {/* How It Works Section */}
       <section className="py-24 px-4 sm:px-6 lg:px-8 bg-black">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
+          <motion.div 
+            className="text-center mb-16"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={fadeInUp}
+          >
             <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
               How It Works
             </h2>
             <p className="text-xl text-gray-400 max-w-2xl mx-auto">
               Transform your resume into a portfolio in three simple steps
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-12">
+          <motion.div 
+            className="grid md:grid-cols-3 gap-12"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={staggerContainer}
+          >
             {/* Step 1 */}
-            <div className="flex flex-col items-center text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center">
+            <motion.div 
+              className="flex flex-col items-center text-center space-y-4"
+              variants={fadeInUp}
+            >
+              <motion.div 
+                className="w-16 h-16 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
                 <FileText className="w-8 h-8 text-purple-400" />
-              </div>
+              </motion.div>
               <h3 className="text-2xl font-semibold text-white">1. Upload Resume</h3>
               <p className="text-gray-400">
                 Upload your PDF or DOCX resume. We support all standard formats.
               </p>
-            </div>
+            </motion.div>
 
             {/* Step 2 */}
-            <div className="flex flex-col items-center text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
+            <motion.div 
+              className="flex flex-col items-center text-center space-y-4"
+              variants={fadeInUp}
+            >
+              <motion.div 
+                className="w-16 h-16 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center"
+                whileHover={{ scale: 1.1, rotate: -5 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
                 <Wand2 className="w-8 h-8 text-blue-400" />
-              </div>
+              </motion.div>
               <h3 className="text-2xl font-semibold text-white">2. AI Processing</h3>
               <p className="text-gray-400">
                 Our AI extracts and structures your information intelligently.
               </p>
-            </div>
+            </motion.div>
 
             {/* Step 3 */}
-            <div className="flex flex-col items-center text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-pink-500/20 border border-pink-500/30 flex items-center justify-center">
+            <motion.div 
+              className="flex flex-col items-center text-center space-y-4"
+              variants={fadeInUp}
+            >
+              <motion.div 
+                className="w-16 h-16 rounded-full bg-pink-500/20 border border-pink-500/30 flex items-center justify-center"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
                 <Globe className="w-8 h-8 text-pink-400" />
-              </div>
+              </motion.div>
               <h3 className="text-2xl font-semibold text-white">3. Get Your Portfolio</h3>
               <p className="text-gray-400">
                 Instantly receive a beautiful, shareable portfolio website.
               </p>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
       {/* Features Section */}
-      <div className="bg-black">
-        <div className="text-center pt-16 pb-8 px-4">
+      <motion.div 
+        className="bg-black"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={fadeIn}
+      >
+        <motion.div 
+          className="text-center pt-16 pb-8 px-4"
+          variants={fadeInUp}
+        >
           <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
             Why Choose Relio?
           </h2>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
             Everything you need to showcase your professional story
           </p>
-        </div>
+        </motion.div>
         <Suspense fallback={<div className="py-16 bg-black" />}>
           <Features />
         </Suspense>
-      </div>
+      </motion.div>
 
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-black border-t border-gray-800">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
-          <h2 className="text-4xl sm:text-5xl font-bold text-white">
+        <motion.div 
+          className="max-w-4xl mx-auto text-center space-y-8"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={staggerContainer}
+        >
+          <motion.h2 
+            className="text-4xl sm:text-5xl font-bold text-white"
+            variants={fadeInUp}
+          >
             Ready to Stand Out?
-          </h2>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+          </motion.h2>
+          <motion.p 
+            className="text-xl text-gray-400 max-w-2xl mx-auto"
+            variants={fadeInUp}
+          >
             Join professionals who are already using Relio to showcase their work
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          </motion.p>
+          <motion.div 
+            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            variants={scaleIn}
+          >
             <Link href={status === 'authenticated' ? '/dashboard' : '/auth/signin'} className="cursor-pointer">
               <Button size="lg" className="text-lg cursor-pointer">
                 {status === 'authenticated' ? 'Go to Dashboard' : 'Create Your Portfolio'}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* Hand Written Section */}

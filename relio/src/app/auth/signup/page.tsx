@@ -12,7 +12,7 @@ import ShinyText from '@/components/ShinyText'
 
 export default function SignUp() {
   const router = useRouter()
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -102,6 +102,7 @@ export default function SignUp() {
         setLoading(false)
       }
     } catch (err) {
+      console.error('Sign up error:', err)
       setError('An error occurred. Please try again.')
       setLoading(false)
     }
@@ -113,6 +114,7 @@ export default function SignUp() {
     try {
       await signIn(provider, { callbackUrl: '/dashboard' })
     } catch (err) {
+      console.error('OAuth sign in error:', err)
       setError(`Failed to sign in with ${provider}. Please try again.`)
       setOauthLoading(null)
     }

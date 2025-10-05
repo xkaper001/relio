@@ -67,6 +67,7 @@ export default function ImageUpload({
         setPreview(currentImage || null)
       }
     } catch (error) {
+      console.error('Image upload error:', error)
       setError('An error occurred while uploading')
       setPreview(currentImage || null)
     } finally {
@@ -93,6 +94,7 @@ export default function ImageUpload({
         setError(data.error || 'Failed to remove image')
       }
     } catch (error) {
+      console.error('Image remove error:', error)
       setError('An error occurred while removing image')
     } finally {
       setUploading(false)
