@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ArrowLeft, Save, Loader2, Plus, Trash2, Eye, EyeOff, ChevronDown, GripVertical } from 'lucide-react'
+import ShinyText from '@/components/ShinyText'
 import Link from 'next/link'
 import ImageUpload from '@/components/ImageUpload'
 import PortfolioView from '@/components/PortfolioView'
@@ -318,7 +319,13 @@ function EditPortfolioContent() {
   if (loading || status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <ShinyText
+          text="RELIO"
+          disabled={false}
+          speed={3}
+          className="text-6xl font-bold"
+          style={{ fontFamily: 'var(--font-array)' }}
+        />
       </div>
     )
   }

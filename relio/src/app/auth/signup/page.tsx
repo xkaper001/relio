@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Github, Mail, Loader2 } from 'lucide-react'
 import { signIn, useSession } from 'next-auth/react'
 import PrismaticBurst from '@/components/PrismaticBurst'
+import ShinyText from '@/components/ShinyText'
 
 export default function SignUp() {
   const router = useRouter()
@@ -30,7 +31,13 @@ export default function SignUp() {
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <ShinyText
+          text="RELIO"
+          disabled={false}
+          speed={3}
+          className="text-6xl font-bold"
+          style={{ fontFamily: 'var(--font-array)' }}
+        />
       </div>
     )
   }

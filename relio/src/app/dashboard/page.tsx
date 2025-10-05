@@ -7,6 +7,7 @@ import { ExternalLink, Edit, Loader2, LogOut, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { FileUpload } from '@/components/ui/file-upload'
 import ProcessingAnimation from '@/components/ProcessingAnimation'
+import ShinyText from '@/components/ShinyText'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -178,7 +179,13 @@ export default function Dashboard() {
   if (loading || status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <ShinyText
+          text="RELIO"
+          disabled={false}
+          speed={3}
+          className="text-6xl font-bold"
+          style={{ fontFamily: 'var(--font-array)' }}
+        />
       </div>
     )
   }
@@ -203,7 +210,7 @@ export default function Dashboard() {
           }}
         >
           <Link href="/" className="flex items-center">
-            <h2 className="text-white text-xl font-bold tracking-tight">Relio</h2>
+            <h2 className="text-white text-xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-array)' }}>RELIO</h2>
           </Link>
           <div className="flex items-center gap-4">
             <span className="text-sm text-white/80 hidden sm:block">
@@ -256,7 +263,13 @@ export default function Dashboard() {
             {uploading && (
               <div className="text-center py-8 mt-4">
                 <div className="inline-block">
-                  <Loader2 className="w-12 h-12 animate-spin text-primary" />
+                  <ShinyText
+                    text="RELIO"
+                    disabled={false}
+                    speed={3}
+                    className="text-4xl font-bold"
+                    style={{ fontFamily: 'var(--font-array)' }}
+                  />
                 </div>
                 <p className="mt-4 text-muted-foreground">
                   Uploading your resume...

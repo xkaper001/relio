@@ -446,8 +446,8 @@ export default function PortfolioView({
         <div className="container mx-auto max-w-5xl text-center">
           <p className="text-muted-foreground">
             Created with{' '}
-            <Link href="/" className="text-primary hover:underline font-medium">
-              Relio
+            <Link href="/" className="text-primary hover:underline font-medium" style={{ fontFamily: 'var(--font-array)' }}>
+              RELIO
             </Link>
             {' '}- Turn your resume into a portfolio in seconds
           </p>

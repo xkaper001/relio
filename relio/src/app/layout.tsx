@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 
@@ -13,8 +14,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const arrayRegular = localFont({
+  src: "../../Array-Regular.otf",
+  variable: "--font-array",
+});
+
 export const metadata: Metadata = {
-  title: "Relio - Turn Your Resume Into a Portfolio",
+  title: "Relio - Turn Your Resume Into a Portfolio in Seconds",
   description: "Instantly convert your resume into a beautiful portfolio website using AI. No coding required.",
 };
 
@@ -26,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white`}
+        className={`${geistSans.variable} ${geistMono.variable} ${arrayRegular.variable} antialiased bg-black text-white`}
       >
         <Providers>{children}</Providers>
       </body>

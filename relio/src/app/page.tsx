@@ -40,15 +40,15 @@ export default function Home() {
               WebkitBackdropFilter: 'blur(10px)'
             }}
           >
-            <Link href="/" className="flex items-center">
-              <h2 className="text-white text-xl font-bold tracking-tight">Relio</h2>
+            <Link href="/" className="flex items-center cursor-pointer">
+              <h2 className="text-white text-xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-array)' }}>RELIO</h2>
             </Link>
 
             <a 
               href="https://github.com/xkaper001/relio" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-white hover:text-white/80 transition-colors"
+              className="flex items-center gap-2 text-white hover:text-white/80 transition-colors cursor-pointer"
             >
               <Github className="w-5 h-5" />
               <span className="hidden sm:inline text-sm font-medium">GitHub</span>
@@ -69,25 +69,25 @@ export default function Home() {
 
             {/* Main Heading */}
             <h1 
-              className="text-white font-bold text-center leading-[1.2] tracking-[-0.02em] max-w-[18ch]"
+              className="text-white font-bold text-center leading-[1.2] tracking-[-0.02em] max-w-[20ch]"
               style={{ 
-                fontSize: 'clamp(2rem, 4vw, 2.6rem)',
+                fontSize: 'clamp(2.5rem, 5vw, 3.5rem)',
                 textShadow: '0 0 16px rgba(0, 0, 0, 0.5)'
               }}
             >
-              Turn Your Resume Into a Stunning Portfolio
+              Turn Your Resume Into a Stunning Portfolio in Seconds
             </h1>
 
             {/* CTA Buttons */}
             <div className="flex gap-4 items-center mt-8">
-              <Link href={session ? '/dashboard' : '/auth/signin'}>
-                <Button variant="default" size="lg">
+              <Link href={session ? '/dashboard' : '/auth/signin'} className="cursor-pointer">
+                <Button variant="default" size="lg" className="cursor-pointer">
                   {session ? 'Go to Dashboard' : 'Get Started Free'}
                 </Button>
               </Link>
               
-              <Link href={session ? '/dashboard' : '/try'}>
-                <Button variant="outline" size="lg">
+              <Link href={session ? '/dashboard' : '/try'} className="cursor-pointer">
+                <Button variant="outline" size="lg" className="cursor-pointer">
                   {session ? 'Upload Resume' : 'Try Without Signup'}
                 </Button>
               </Link>
@@ -188,8 +188,8 @@ export default function Home() {
             Join thousands of professionals who are already using Relio to showcase their work
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href={session ? '/dashboard' : '/auth/signin'}>
-              <Button size="lg" className="text-lg">
+            <Link href={session ? '/dashboard' : '/auth/signin'} className="cursor-pointer">
+              <Button size="lg" className="text-lg cursor-pointer">
                 {session ? 'Go to Dashboard' : 'Create Your Portfolio'}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>

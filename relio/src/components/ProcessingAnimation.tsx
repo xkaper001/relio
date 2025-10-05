@@ -95,11 +95,11 @@ export default function ProcessingAnimation({ aiProcessingTime, portfolioSlug, o
               className="text-center"
             >
               <BlurText
-                text="built with cerebras"
+                text="Powered by Cerebras Wafer-Scale Engine 3"
                 delay={50}
                 animateBy="words"
                 direction="top"
-                className="text-4xl md:text-5xl font-bold text-purple-400"
+                className="text-4xl md:text-5xl font-bold text-orange-400"
               />
             </motion.div>
           )}

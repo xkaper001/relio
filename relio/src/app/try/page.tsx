@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { FileUpload } from '@/components/ui/file-upload'
 import ProcessingAnimation from '@/components/ProcessingAnimation'
+import ShinyText from '@/components/ShinyText'
 
 export default function TryPage() {
   const [uploading, setUploading] = useState(false)
@@ -99,7 +100,15 @@ export default function TryPage() {
 
           {uploading && (
             <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+              <div className="inline-block">
+                <ShinyText
+                  text="RELIO"
+                  disabled={false}
+                  speed={3}
+                  className="text-4xl font-bold"
+                  style={{ fontFamily: 'var(--font-array)' }}
+                />
+              </div>
               <p className="mt-4 text-gray-400">
                 Uploading your resume...
               </p>
