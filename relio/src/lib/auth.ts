@@ -6,6 +6,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from './prisma'
 import bcrypt from 'bcryptjs'
 import type { Adapter, AdapterUser } from 'next-auth/adapters'
+import type { User as PrismaUser } from '@prisma/client'
 
 // Helper function to generate a unique username from email
 async function generateUniqueUsername(email: string): Promise<string> {
@@ -25,53 +26,43 @@ async function generateUniqueUsername(email: string): Promise<string> {
 // Custom adapter that extends PrismaAdapter to handle username
 function CustomPrismaAdapter(p: typeof prisma): Adapter {
   const adapter = PrismaAdapter(p) as Adapter
+  const mapUser = (user: PrismaUser): AdapterUser => ({
+    id: user.id,
+    email: user.email!,
+    emailVerified: user.emailVerified,
+    name: user.name,
+    image: user.image,
+    username: user.username,
+  })
   
   return {
     ...adapter,
     async createUser(user: Omit<AdapterUser, 'id'>): Promise<AdapterUser> {
       const username = await generateUniqueUsername(user.email || `user${Date.now()}`)
+  const { image: _image, ...userData } = user
+  void _image
       
       const newUser = await p.user.create({
         data: {
-          ...user,
+          ...userData,
+          image: null,
           username,
         },
       })
       
-      return {
-        id: newUser.id,
-        email: newUser.email!,
-        emailVerified: newUser.emailVerified,
-        name: newUser.name,
-        image: newUser.image,
-        username: newUser.username,
-      }
+      return mapUser(newUser)
     },
     async getUser(id: string) {
       const user = await p.user.findUnique({ where: { id } })
       if (!user) return null
       
-      return {
-        id: user.id,
-        email: user.email!,
-        emailVerified: user.emailVerified,
-        name: user.name,
-        image: user.image,
-        username: user.username,
-      }
+      return mapUser(user)
     },
     async getUserByEmail(email: string) {
       const user = await p.user.findUnique({ where: { email } })
       if (!user) return null
       
-      return {
-        id: user.id,
-        email: user.email!,
-        emailVerified: user.emailVerified,
-        name: user.name,
-        image: user.image,
-        username: user.username,
-      }
+      return mapUser(user)
     },
     async getUserByAccount({ providerAccountId, provider }) {
       const account = await p.account.findUnique({
@@ -80,14 +71,33 @@ function CustomPrismaAdapter(p: typeof prisma): Adapter {
       })
       if (!account) return null
       
-      return {
-        id: account.user.id,
-        email: account.user.email!,
-        emailVerified: account.user.emailVerified,
-        name: account.user.name,
-        image: account.user.image,
-        username: account.user.username,
+      return mapUser(account.user)
+    },
+    async updateUser(user) {
+  const { id, image: _image, ...data } = user
+  void _image
+      if (!id) {
+        throw new Error('User ID is required for update')
       }
+
+      const updateData = Object.fromEntries(
+        Object.entries(data).filter(([, value]) => value !== undefined)
+      )
+
+      if (Object.keys(updateData).length === 0) {
+        const existingUser = await p.user.findUnique({ where: { id } })
+        if (!existingUser) {
+          throw new Error('User not found')
+        }
+        return mapUser(existingUser)
+      }
+
+      const updatedUser = await p.user.update({
+        where: { id },
+        data: updateData,
+      })
+
+      return mapUser(updatedUser)
     },
   }
 }
