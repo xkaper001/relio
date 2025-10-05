@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import PortfolioView from '@/components/PortfolioView'
 import PortfolioViewAnimated from '@/components/PortfolioViewAnimated'
 import type { PortfolioConfig } from '@/types'
+import type { Metadata } from 'next'
 
 interface PageProps {
   params: Promise<{
@@ -44,6 +45,25 @@ async function getPortfolio(slug: string) {
   } catch (error) {
     console.error('Error fetching portfolio:', error)
     return null
+  }
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params
+  const portfolio = await getPortfolio(slug)
+
+  if (!portfolio) {
+    return {
+      title: 'Portfolio Not Found',
+    }
+  }
+
+  const portfolioName = portfolio.config.name || 'Portfolio'
+  const portfolioTitle = portfolio.config.title || ''
+
+  return {
+    title: `${portfolioName}${portfolioTitle ? ` - ${portfolioTitle}` : ''} | Relio`,
+    description: portfolio.config.about || `Check out ${portfolioName}'s professional portfolio`,
   }
 }
 
