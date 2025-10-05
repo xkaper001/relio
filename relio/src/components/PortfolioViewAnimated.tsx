@@ -252,12 +252,286 @@ export default function PortfolioViewAnimated({
     }
   }
 
+  // Default section order and get custom order
+  const DEFAULT_SECTION_ORDER = ['skills', 'experience', 'education', 'projects']
+  const sectionOrder = config.sectionOrder || DEFAULT_SECTION_ORDER
+  const allSections = ['hero', 'about', ...sectionOrder]
+
+  // Get section display name
+  const getSectionDisplayName = (sectionKey: string): string => {
+    const names: { [key: string]: string } = {
+      'skills': 'Skills',
+      'experience': 'Experience',
+      'education': 'Education',
+      'projects': 'Projects',
+      'about': 'About'
+    }
+    return names[sectionKey] || sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1)
+  }
+
+  // Render individual sections based on key
+  const renderSection = (sectionKey: string) => {
+    switch (sectionKey) {
+      case 'experience':
+        if (!config.experience || config.experience.length === 0) return null
+        return (
+          <section key={sectionKey} id="experience" className="py-24 px-4 md:px-6">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeIn}
+              className="container mx-auto max-w-4xl"
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="inline-block rounded-full bg-muted px-4 py-2 text-sm mb-8"
+              >
+                Experience
+              </motion.div>
+
+              <motion.div
+                variants={staggerContainer}
+                className="space-y-6"
+              >
+                {config.experience.map((exp, index) => (
+                  <motion.div
+                    key={index}
+                    variants={itemFadeIn}
+                    whileHover={{ y: -5, transition: { duration: 0.3 } }}
+                    className="group relative overflow-hidden rounded-3xl border p-8 shadow-sm transition-all hover:shadow-md bg-card"
+                  >
+                    <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-all duration-300" />
+                    
+                    <div className="relative">
+                      <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+                        <div>
+                          <h3 className="text-xl font-bold">{exp.position}</h3>
+                          <p className="text-lg text-primary">{exp.company}</p>
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {exp.startDate} - {exp.endDate}
+                        </span>
+                      </div>
+                      
+                      <p className="text-muted-foreground mb-4">{exp.description}</p>
+                      
+                      {exp.achievements && exp.achievements.length > 0 && (
+                        <ul className="space-y-2">
+                          {exp.achievements.map((achievement, i) => (
+                            <li key={i} className="flex items-start gap-2">
+                              <svg className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              <span className="text-sm">{achievement}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </motion.div>
+          </section>
+        )
+
+      case 'skills':
+        if (!config.skills || config.skills.length === 0) return null
+        return (
+          <section key={sectionKey} id="skills" className="py-24 px-4 md:px-6">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeIn}
+              className="container mx-auto max-w-4xl"
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="inline-block rounded-full bg-muted px-4 py-2 text-sm mb-8"
+              >
+                Skills & Technologies
+              </motion.div>
+
+              <motion.div
+                variants={staggerContainer}
+                className="flex flex-wrap gap-3"
+              >
+                {config.skills.map((skill, index) => (
+                  <motion.div
+                    key={index}
+                    variants={itemFadeIn}
+                    whileHover={{ scale: 1.1, rotate: 2 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm border border-primary/20 hover:bg-primary/20 transition-colors"
+                  >
+                    {skill}
+                  </motion.div>
+                ))}
+              </motion.div>
+            </motion.div>
+          </section>
+        )
+
+      case 'projects':
+        if (!config.projects || config.projects.length === 0) return null
+        return (
+          <section key={sectionKey} id="projects" className="py-24 px-4 md:px-6">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeIn}
+              className="container mx-auto max-w-6xl"
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="inline-block rounded-full bg-muted px-4 py-2 text-sm mb-8"
+              >
+                Projects
+              </motion.div>
+
+              <motion.div
+                variants={staggerContainer}
+                className="grid gap-6 md:grid-cols-2"
+              >
+                {config.projects.map((project, index) => (
+                  <motion.div
+                    key={index}
+                    variants={itemFadeIn}
+                    whileHover={{ y: -5, transition: { duration: 0.3 } }}
+                    className="group relative overflow-hidden rounded-3xl border p-8 shadow-sm transition-all hover:shadow-md bg-card"
+                  >
+                    <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-all duration-300" />
+                    
+                    <div className="relative">
+                      <h3 className="text-xl font-bold mb-3">{project.name}</h3>
+                      <p className="text-muted-foreground mb-4">{project.description}</p>
+                      
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {project.technologies.map((tech, i) => (
+                          <span
+                            key={i}
+                            className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                      
+                      <div className="flex gap-3">
+                        {project.link && (
+                          <motion.a
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            href={ensureHttps(project.link)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+                          >
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                            Live Demo
+                          </motion.a>
+                        )}
+                        {project.github && (
+                          <motion.a
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            href={ensureHttps(project.github)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+                          >
+                            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                            </svg>
+                            Source Code
+                          </motion.a>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </motion.div>
+          </section>
+        )
+
+      case 'education':
+        if (!config.education || config.education.length === 0) return null
+        return (
+          <section key={sectionKey} id="education" className="py-24 px-4 md:px-6">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeIn}
+              className="container mx-auto max-w-4xl"
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="inline-block rounded-full bg-muted px-4 py-2 text-sm mb-8"
+              >
+                Education
+              </motion.div>
+
+              <motion.div
+                variants={staggerContainer}
+                className="space-y-6"
+              >
+                {config.education.map((edu, index) => (
+                  <motion.div
+                    key={index}
+                    variants={itemFadeIn}
+                    whileHover={{ y: -5, transition: { duration: 0.3 } }}
+                    className="group relative overflow-hidden rounded-3xl border p-8 shadow-sm transition-all hover:shadow-md bg-card"
+                  >
+                    <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-all duration-300" />
+                    
+                    <div className="relative">
+                      <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
+                        <div>
+                          <h3 className="text-xl font-bold">{edu.degree}</h3>
+                          <p className="text-lg text-primary">{edu.institution}</p>
+                          {edu.gpa && (
+                            <p className="text-sm text-muted-foreground mt-1">GPA: {edu.gpa}</p>
+                          )}
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {edu.startDate} - {edu.endDate}
+                        </span>
+                      </div>
+                      <p className="text-muted-foreground">{edu.field}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </motion.div>
+          </section>
+        )
+
+      default:
+        return null
+    }
+  }
+
   useEffect(() => {
     const handleScroll = () => {
       setScrollY(window.scrollY)
       
       // Update active section based on scroll position
-      const sections = ['hero', 'about', 'experience', 'skills', 'projects', 'education']
+      const sections = allSections
       const scrollPosition = window.scrollY + 200
       
       for (const section of sections) {
@@ -360,15 +634,15 @@ export default function PortfolioViewAnimated({
           </div>
           
           <nav className="hidden md:flex gap-6">
-            {['About', 'Experience', 'Skills', 'Projects', 'Education'].map((item) => (
+            {['about', ...sectionOrder].map((item) => (
               <button
                 key={item}
-                onClick={() => scrollToSection(item.toLowerCase())}
+                onClick={() => scrollToSection(item)}
                 className={`text-sm font-medium transition-colors hover:text-primary ${
-                  activeSection === item.toLowerCase() ? 'text-primary' : ''
+                  activeSection === item ? 'text-primary' : ''
                 }`}
               >
-                {item}
+                {getSectionDisplayName(item)}
               </button>
             ))}
           </nav>
@@ -563,248 +837,8 @@ export default function PortfolioViewAnimated({
           </motion.div>
         </section>
 
-        {/* Experience Section */}
-        {config.experience && config.experience.length > 0 && (
-          <section id="experience" className="py-24 px-4 md:px-6">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeIn}
-              className="container mx-auto max-w-4xl"
-            >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="inline-block rounded-full bg-muted px-4 py-2 text-sm mb-8"
-              >
-                Experience
-              </motion.div>
-
-              <motion.div
-                variants={staggerContainer}
-                className="space-y-6"
-              >
-                {config.experience.map((exp, index) => (
-                  <motion.div
-                    key={index}
-                    variants={itemFadeIn}
-                    whileHover={{ y: -5, transition: { duration: 0.3 } }}
-                    className="group relative overflow-hidden rounded-3xl border p-8 shadow-sm transition-all hover:shadow-md bg-card"
-                  >
-                    <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-all duration-300" />
-                    
-                    <div className="relative">
-                      <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-                        <div>
-                          <h3 className="text-xl font-bold">{exp.position}</h3>
-                          <p className="text-lg text-primary">{exp.company}</p>
-                        </div>
-                        <span className="text-sm text-muted-foreground">
-                          {exp.startDate} - {exp.endDate}
-                        </span>
-                      </div>
-                      
-                      <p className="text-muted-foreground mb-4">{exp.description}</p>
-                      
-                      {exp.achievements && exp.achievements.length > 0 && (
-                        <ul className="space-y-2">
-                          {exp.achievements.map((achievement, i) => (
-                            <li key={i} className="flex items-start gap-2">
-                              <svg className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                              </svg>
-                              <span className="text-sm">{achievement}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-              </motion.div>
-            </motion.div>
-          </section>
-        )}
-
-        {/* Skills Section */}
-        {config.skills && config.skills.length > 0 && (
-          <section id="skills" className="py-24 px-4 md:px-6">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeIn}
-              className="container mx-auto max-w-4xl"
-            >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="inline-block rounded-full bg-muted px-4 py-2 text-sm mb-8"
-              >
-                Skills & Technologies
-              </motion.div>
-
-              <motion.div
-                variants={staggerContainer}
-                className="flex flex-wrap gap-3"
-              >
-                {config.skills.map((skill, index) => (
-                  <motion.div
-                    key={index}
-                    variants={itemFadeIn}
-                    whileHover={{ scale: 1.1, rotate: 2 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm border border-primary/20 hover:bg-primary/20 transition-colors"
-                  >
-                    {skill}
-                  </motion.div>
-                ))}
-              </motion.div>
-            </motion.div>
-          </section>
-        )}
-
-        {/* Projects Section */}
-        {config.projects && config.projects.length > 0 && (
-          <section id="projects" className="py-24 px-4 md:px-6">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeIn}
-              className="container mx-auto max-w-6xl"
-            >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="inline-block rounded-full bg-muted px-4 py-2 text-sm mb-8"
-              >
-                Projects
-              </motion.div>
-
-              <motion.div
-                variants={staggerContainer}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              >
-                {config.projects.map((project, index) => (
-                  <motion.div
-                    key={index}
-                    variants={itemFadeIn}
-                    whileHover={{ y: -10, transition: { duration: 0.3 } }}
-                    className="group relative overflow-hidden rounded-3xl border p-6 shadow-sm transition-all hover:shadow-md bg-card"
-                  >
-                    <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-all duration-300" />
-                    
-                    <div className="relative">
-                      <h3 className="text-xl font-bold mb-3">{project.name}</h3>
-                      <p className="text-muted-foreground text-sm mb-4">{project.description}</p>
-                      
-                      {project.technologies && project.technologies.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {project.technologies.map((tech, i) => (
-                            <span
-                              key={i}
-                              className="px-2 py-1 rounded text-xs bg-muted text-muted-foreground"
-                            >
-                              {tech}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      
-                      <div className="flex gap-3">
-                        {project.link && (
-                          <motion.a
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            href={ensureHttps(project.link)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-primary underline-offset-4 hover:underline"
-                          >
-                            View Project →
-                          </motion.a>
-                        )}
-                        {project.github && (
-                          <motion.a
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            href={ensureHttps(project.github)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-muted-foreground underline-offset-4 hover:underline"
-                          >
-                            GitHub
-                          </motion.a>
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </motion.div>
-            </motion.div>
-          </section>
-        )}
-
-        {/* Education Section */}
-        {config.education && config.education.length > 0 && (
-          <section id="education" className="py-24 px-4 md:px-6">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeIn}
-              className="container mx-auto max-w-4xl"
-            >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="inline-block rounded-full bg-muted px-4 py-2 text-sm mb-8"
-              >
-                Education
-              </motion.div>
-
-              <motion.div
-                variants={staggerContainer}
-                className="space-y-6"
-              >
-                {config.education.map((edu, index) => (
-                  <motion.div
-                    key={index}
-                    variants={itemFadeIn}
-                    whileHover={{ y: -5, transition: { duration: 0.3 } }}
-                    className="group relative overflow-hidden rounded-3xl border p-8 shadow-sm transition-all hover:shadow-md bg-card"
-                  >
-                    <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-all duration-300" />
-                    
-                    <div className="relative">
-                      <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-                        <div>
-                          <h3 className="text-xl font-bold">{edu.degree}</h3>
-                          <p className="text-lg text-primary">{edu.institution}</p>
-                          <p className="text-muted-foreground">{edu.field}</p>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-sm text-muted-foreground">
-                            {edu.startDate} - {edu.endDate}
-                          </span>
-                          {edu.gpa && (
-                            <p className="text-sm font-semibold mt-1">GPA: {edu.gpa}</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </motion.div>
-            </motion.div>
-          </section>
-        )}
+        {/* Dynamic Sections in Custom Order */}
+        {sectionOrder.map((sectionKey) => renderSection(sectionKey))}
 
         {/* Footer */}
         <footer className="border-t py-12 px-4 md:px-6">

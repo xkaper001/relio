@@ -57,6 +57,10 @@ export default function PortfolioView({
   const pathname = usePathname()
   const { data: session } = useSession()
 
+  // Default section order
+  const DEFAULT_SECTION_ORDER = ['skills', 'experience', 'education', 'projects']
+  const sectionOrder = config.sectionOrder || DEFAULT_SECTION_ORDER
+
   useEffect(() => {
     if (isTemporary && expiresAt) {
       const updateTimer = () => {
@@ -113,6 +117,183 @@ export default function PortfolioView({
       console.error('Error saving portfolio:', error)
       alert('An error occurred while saving the portfolio')
       setSaving(false)
+    }
+  }
+
+  // Render individual sections
+  const renderSection = (sectionKey: string, index: number) => {
+    const isEven = index % 2 === 0
+    const bgClass = isEven ? 'bg-muted/30' : ''
+
+    switch (sectionKey) {
+      case 'skills':
+        if (!config.skills || config.skills.length === 0) return null
+        return (
+          <section key={sectionKey} className={`py-16 px-4 ${bgClass}`}>
+            <div className="container mx-auto max-w-5xl">
+              <div className="flex items-center gap-3 mb-8">
+                <Code className="w-8 h-8 text-primary" />
+                <h2 className="text-3xl font-bold text-foreground">Skills</h2>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {config.skills.map((skill, idx) => (
+                  <span
+                    key={idx}
+                    className="px-4 py-2 bg-background border border-border rounded-full text-foreground font-medium hover:border-primary transition-colors"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </section>
+        )
+
+      case 'experience':
+        if (!config.experience || config.experience.length === 0) return null
+        return (
+          <section key={sectionKey} className={`py-16 px-4 ${bgClass}`}>
+            <div className="container mx-auto max-w-5xl">
+              <div className="flex items-center gap-3 mb-8">
+                <Briefcase className="w-8 h-8 text-primary" />
+                <h2 className="text-3xl font-bold text-foreground">Experience</h2>
+              </div>
+              <div className="space-y-8">
+                {config.experience.map((exp, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-card rounded-lg border border-border p-6 hover:border-primary/50 transition-colors"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+                      <div>
+                        <h3 className="text-xl font-semibold text-foreground">
+                          {exp.position}
+                        </h3>
+                        <p className="text-lg text-primary font-medium">{exp.company}</p>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Calendar className="w-4 h-4" />
+                        <span className="text-sm whitespace-nowrap">
+                          {exp.startDate} - {exp.endDate}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-muted-foreground mb-4">{exp.description}</p>
+                    {exp.achievements && exp.achievements.length > 0 && (
+                      <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                        {exp.achievements.map((achievement, i) => (
+                          <li key={i}>{achievement}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )
+
+      case 'education':
+        if (!config.education || config.education.length === 0) return null
+        return (
+          <section key={sectionKey} className={`py-16 px-4 ${bgClass}`}>
+            <div className="container mx-auto max-w-5xl">
+              <div className="flex items-center gap-3 mb-8">
+                <GraduationCap className="w-8 h-8 text-primary" />
+                <h2 className="text-3xl font-bold text-foreground">Education</h2>
+              </div>
+              <div className="space-y-6">
+                {config.education.map((edu, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-card rounded-lg border border-border p-6 hover:border-primary/50 transition-colors"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                      <div>
+                        <h3 className="text-xl font-semibold text-foreground">
+                          {edu.degree} in {edu.field}
+                        </h3>
+                        <p className="text-lg text-primary font-medium">{edu.institution}</p>
+                        {edu.gpa && (
+                          <p className="text-muted-foreground mt-2">GPA: {edu.gpa}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Calendar className="w-4 h-4" />
+                        <span className="text-sm whitespace-nowrap">
+                          {edu.startDate} - {edu.endDate}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )
+
+      case 'projects':
+        if (!config.projects || config.projects.length === 0) return null
+        return (
+          <section key={sectionKey} className={`py-16 px-4 ${bgClass}`}>
+            <div className="container mx-auto max-w-5xl">
+              <div className="flex items-center gap-3 mb-8">
+                <Code className="w-8 h-8 text-primary" />
+                <h2 className="text-3xl font-bold text-foreground">Projects</h2>
+              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                {config.projects.map((project, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-card rounded-lg border border-border p-6 hover:border-primary/50 transition-colors"
+                  >
+                    <h3 className="text-xl font-semibold text-foreground mb-3">
+                      {project.name}
+                    </h3>
+                    <p className="text-muted-foreground mb-4">{project.description}</p>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {project.technologies.map((tech, i) => (
+                        <span
+                          key={i}
+                          className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex gap-3">
+                      {project.link && (
+                        <a
+                          href={ensureHttps(project.link)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-primary hover:underline text-sm"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          View Project
+                        </a>
+                      )}
+                      {project.github && (
+                        <a
+                          href={ensureHttps(project.github)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-primary hover:underline text-sm"
+                        >
+                          <Github className="w-4 h-4" />
+                          Source Code
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )
+
+      default:
+        return null
     }
   }
 
@@ -257,167 +438,8 @@ export default function PortfolioView({
         </div>
       </section>
 
-      {/* Skills Section */}
-      {config.skills && config.skills.length > 0 && (
-        <section className="py-16 px-4 bg-muted/30">
-          <div className="container mx-auto max-w-5xl">
-            <div className="flex items-center gap-3 mb-8">
-              <Code className="w-8 h-8 text-primary" />
-              <h2 className="text-3xl font-bold text-foreground">Skills</h2>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              {config.skills.map((skill, index) => (
-                <span
-                  key={index}
-                  className="px-4 py-2 bg-background border border-border rounded-full text-foreground font-medium hover:border-primary transition-colors"
-                >
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Experience Section */}
-      {config.experience && config.experience.length > 0 && (
-        <section className="py-16 px-4">
-          <div className="container mx-auto max-w-5xl">
-            <div className="flex items-center gap-3 mb-8">
-              <Briefcase className="w-8 h-8 text-primary" />
-              <h2 className="text-3xl font-bold text-foreground">Experience</h2>
-            </div>
-            <div className="space-y-8">
-              {config.experience.map((exp, index) => (
-                <div
-                  key={index}
-                  className="bg-card rounded-lg border border-border p-6 hover:border-primary/50 transition-colors"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
-                    <div>
-                      <h3 className="text-xl font-semibold text-foreground">
-                        {exp.position}
-                      </h3>
-                      <p className="text-lg text-primary font-medium">{exp.company}</p>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Calendar className="w-4 h-4" />
-                      <span className="text-sm whitespace-nowrap">
-                        {exp.startDate} - {exp.endDate}
-                      </span>
-                    </div>
-                  </div>
-                  <p className="text-muted-foreground mb-4">{exp.description}</p>
-                  {exp.achievements && exp.achievements.length > 0 && (
-                    <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                      {exp.achievements.map((achievement, i) => (
-                        <li key={i}>{achievement}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Education Section */}
-      {config.education && config.education.length > 0 && (
-        <section className="py-16 px-4 bg-muted/30">
-          <div className="container mx-auto max-w-5xl">
-            <div className="flex items-center gap-3 mb-8">
-              <GraduationCap className="w-8 h-8 text-primary" />
-              <h2 className="text-3xl font-bold text-foreground">Education</h2>
-            </div>
-            <div className="space-y-6">
-              {config.education.map((edu, index) => (
-                <div
-                  key={index}
-                  className="bg-card rounded-lg border border-border p-6 hover:border-primary/50 transition-colors"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                    <div>
-                      <h3 className="text-xl font-semibold text-foreground">
-                        {edu.degree} in {edu.field}
-                      </h3>
-                      <p className="text-lg text-primary font-medium">{edu.institution}</p>
-                      {edu.gpa && (
-                        <p className="text-muted-foreground mt-2">GPA: {edu.gpa}</p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Calendar className="w-4 h-4" />
-                      <span className="text-sm whitespace-nowrap">
-                        {edu.startDate} - {edu.endDate}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Projects Section */}
-      {config.projects && config.projects.length > 0 && (
-        <section className="py-16 px-4">
-          <div className="container mx-auto max-w-5xl">
-            <div className="flex items-center gap-3 mb-8">
-              <Code className="w-8 h-8 text-primary" />
-              <h2 className="text-3xl font-bold text-foreground">Projects</h2>
-            </div>
-            <div className="grid md:grid-cols-2 gap-6">
-              {config.projects.map((project, index) => (
-                <div
-                  key={index}
-                  className="bg-card rounded-lg border border-border p-6 hover:border-primary/50 transition-colors"
-                >
-                  <h3 className="text-xl font-semibold text-foreground mb-3">
-                    {project.name}
-                  </h3>
-                  <p className="text-muted-foreground mb-4">{project.description}</p>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {project.technologies.map((tech, i) => (
-                      <span
-                        key={i}
-                        className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex gap-3">
-                    {project.link && (
-                      <a
-                        href={ensureHttps(project.link)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-primary hover:underline text-sm"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                        View Project
-                      </a>
-                    )}
-                    {project.github && (
-                      <a
-                        href={ensureHttps(project.github)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-primary hover:underline text-sm"
-                      >
-                        <Github className="w-4 h-4" />
-                        Source Code
-                      </a>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      {/* Dynamic Sections in Custom Order */}
+      {sectionOrder.map((sectionKey, index) => renderSection(sectionKey, index))}
 
       {/* Footer */}
       <footer className="py-12 px-4 border-t border-border">

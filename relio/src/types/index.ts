@@ -12,6 +12,7 @@ export interface PortfolioConfig {
   experience: Experience[]
   education: Education[]
   projects: Project[]
+  sectionOrder?: string[]
 }
 
 export interface Experience {
