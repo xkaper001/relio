@@ -1,4 +1,5 @@
 import 'next-auth'
+import 'next-auth/adapters'
 
 declare module 'next-auth' {
   interface Session {
@@ -21,5 +22,11 @@ declare module 'next-auth/jwt' {
     id?: string
     username?: string
     email?: string
+  }
+}
+
+declare module 'next-auth/adapters' {
+  interface AdapterUser {
+    username: string
   }
 }
