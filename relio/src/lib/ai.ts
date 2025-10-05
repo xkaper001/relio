@@ -39,6 +39,7 @@ export interface PortfolioConfig {
     link?: string
     github?: string
   }>
+  sectionOrder?: string[]
 }
 
 const portfolioSchema = {
@@ -214,6 +215,11 @@ export async function parseResumeToPortfolio(
         }
       })
       config.skills = [...new Set(flatSkills)] // Remove duplicates
+    }
+    
+    // Set default section order if not present
+    if (!config.sectionOrder) {
+      config.sectionOrder = ['skills', 'experience', 'education', 'projects']
     }
     
     return config
