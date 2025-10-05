@@ -49,19 +49,23 @@ export default function SignIn() {
         email,
         password,
         redirect: false,
+        callbackUrl: '/dashboard',
       })
+
+      console.log('Sign in result:', result)
 
       if (result?.error) {
         setError('Invalid email or password')
         setLoading(false)
       } else if (result?.ok) {
-        // Wait a moment for session to update, then redirect
-        setTimeout(() => {
-          router.push('/dashboard')
-          router.refresh()
-        }, 100)
+        // Successfully signed in, redirect to dashboard
+        window.location.href = '/dashboard'
+      } else {
+        setError('An unexpected error occurred. Please try again.')
+        setLoading(false)
       }
     } catch (err) {
+      console.error('Sign in error:', err)
       setError('An error occurred. Please try again.')
       setLoading(false)
     }

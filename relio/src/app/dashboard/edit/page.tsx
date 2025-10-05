@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ArrowLeft, Save, Loader2, Plus, Trash2, Eye, EyeOff, ChevronDown } from 'lucide-react'
+import { ArrowLeft, Save, Loader2, Plus, Trash2, Eye, EyeOff, ChevronDown, GripVertical } from 'lucide-react'
 import Link from 'next/link'
 import ImageUpload from '@/components/ImageUpload'
 import PortfolioView from '@/components/PortfolioView'
@@ -54,6 +54,10 @@ function EditPortfolioContent() {
   const [showPreview, setShowPreview] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [draggedSection, setDraggedSection] = useState<string | null>(null)
+
+  // Default section order
+  const DEFAULT_SECTION_ORDER = ['skills', 'experience', 'education', 'projects']
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -67,7 +71,12 @@ function EditPortfolioContent() {
       const data = await response.json()
       
       if (response.ok && data.portfolio) {
-        setPortfolio(data.portfolio.config as PortfolioConfig)
+        const config = data.portfolio.config as PortfolioConfig
+        // Ensure section order exists
+        if (!config.sectionOrder) {
+          config.sectionOrder = DEFAULT_SECTION_ORDER
+        }
+        setPortfolio(config)
         setPortfolioTitle(data.portfolio.title)
         setAvatar(data.portfolio.avatar)
       } else {
@@ -255,6 +264,57 @@ function EditPortfolioContent() {
     }
   }
 
+  // Section reordering functions
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, sectionName: string) => {
+    setDraggedSection(sectionName)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+  }
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>, targetSection: string) => {
+    e.preventDefault()
+    
+    if (!portfolio || !draggedSection || draggedSection === targetSection) {
+      setDraggedSection(null)
+      return
+    }
+
+    const currentOrder = portfolio.sectionOrder || DEFAULT_SECTION_ORDER
+    const draggedIndex = currentOrder.indexOf(draggedSection)
+    const targetIndex = currentOrder.indexOf(targetSection)
+
+    if (draggedIndex === -1 || targetIndex === -1) {
+      setDraggedSection(null)
+      return
+    }
+
+    const newOrder = [...currentOrder]
+    newOrder.splice(draggedIndex, 1)
+    newOrder.splice(targetIndex, 0, draggedSection)
+
+    setPortfolio({ ...portfolio, sectionOrder: newOrder })
+    setDraggedSection(null)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedSection(null)
+  }
+
+  // Get section display name
+  const getSectionDisplayName = (sectionKey: string): string => {
+    const names: { [key: string]: string } = {
+      'skills': 'Skills',
+      'experience': 'Experience',
+      'education': 'Education',
+      'projects': 'Projects'
+    }
+    return names[sectionKey] || sectionKey
+  }
+
   if (loading || status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -364,6 +424,41 @@ function EditPortfolioContent() {
                   <p className="text-xs text-muted-foreground">
                     This helps you identify this portfolio in your dashboard
                   </p>
+                </div>
+              </CollapsibleContent>
+            </div>
+          </Collapsible>
+
+          {/* Section Order */}
+          <Collapsible defaultOpen={false}>
+            <div className="bg-card rounded-lg border border-border">
+              <CollapsibleTrigger className="w-full p-6 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                <h2 className="text-xl font-semibold text-foreground">Section Order</h2>
+                <ChevronIcon />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="px-6 pb-6 space-y-3">
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Drag sections to reorder how they appear on your portfolio
+                  </p>
+                  {(portfolio?.sectionOrder || DEFAULT_SECTION_ORDER).map((sectionKey) => (
+                    <div
+                      key={sectionKey}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, sectionKey)}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, sectionKey)}
+                      onDragEnd={handleDragEnd}
+                      className={`flex items-center gap-3 p-4 rounded-lg border border-border bg-background cursor-move hover:border-primary transition-colors ${
+                        draggedSection === sectionKey ? 'opacity-50' : ''
+                      }`}
+                    >
+                      <GripVertical className="w-5 h-5 text-muted-foreground" />
+                      <span className="font-medium text-foreground">
+                        {getSectionDisplayName(sectionKey)}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </CollapsibleContent>
             </div>
